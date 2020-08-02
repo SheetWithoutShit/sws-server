@@ -1,5 +1,6 @@
 """This module provides server app initialization."""
 
+import os
 import asyncio
 import logging
 
@@ -7,6 +8,7 @@ from aiohttp.web import Application
 from core.database.postgres import PoolManager as PGPoolManager
 from core.database.redis import PoolManager as RedisPoolManager
 
+from middlewares import auth_middleware
 from app.auth.views import auth_routes
 from app.budget.views import budget_routes
 from app.profile.views import profile_routes
@@ -30,6 +32,14 @@ async def init_clients(app):
     LOGGER.debug("Clients has successfully closed.")
 
 
+async def init_constants(app):
+    """Initialize aiohttp application with required constants."""
+    app["constants"] = constants = {}
+
+    constants["SERVER_SECRET"] = os.environ["SERVER_SECRET"]
+    constants["JWT_ALGORITHM"] = os.environ.get("JWT_ALGORITHM", "HS256")
+
+
 def init_app():
     """Prepare aiohttp web server for further running."""
     app = Application()
@@ -40,5 +50,8 @@ def init_app():
     app.add_routes(transaction_routes)
 
     app.cleanup_ctx.append(init_clients)
+    app.on_startup.append(init_constants)
+
+    app.middlewares.append(auth_middleware)
 
     return app

@@ -10,7 +10,7 @@ jobs:
     script:
       - pylint --rcfile=.pylintrc ./server/ --init-hook='sys.path.extend(["./server/"])'
   - stage: "AWS Deploy"
-    if: branch = master
+    if: branch = master AND type = push
     before_script: chmod +x ci/aws_deploy.sh
     script:
       - ci/aws_deploy.sh
