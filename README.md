@@ -8,6 +8,8 @@ TODO: running
 
 # Environment variables
 ```shell script
+MONOBANK_WEBHOOK_SECRET=
+
 POSTGRES_HOST=
 POSTGRES_PORT=5432
 POSTGRES_USER=
