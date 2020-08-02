@@ -12,14 +12,14 @@ from app.budget.views import budget_routes
 from app.profile.views import profile_routes
 from app.transactions.views import transaction_routes
 
-LOG = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 async def init_clients(app):
     """Initialize aiohttp application with required clients."""
     app["postgres"] = postgres = await PGPoolManager.create()
     app["redis"] = redis = await RedisPoolManager.create()
-    LOG.debug("Clients has successfully initialized.")
+    LOGGER.debug("Clients has successfully initialized.")
 
     yield
 
@@ -27,7 +27,7 @@ async def init_clients(app):
         postgres.close(),
         redis.close()
     )
-    LOG.debug("Clients has successfully closed.")
+    LOGGER.debug("Clients has successfully closed.")
 
 
 def init_app():
