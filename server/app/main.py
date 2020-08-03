@@ -8,8 +8,9 @@ from aiohttp.web import Application
 from core.database.postgres import PoolManager as PGPoolManager
 from core.database.redis import PoolManager as RedisPoolManager
 
-from middlewares import auth_middleware
+from middlewares import auth_middleware, body_validator_middleware
 from app.auth.views import auth_routes
+from app.budget.db import Budget
 from app.budget.views import budget_routes
 from app.profile.views import profile_routes
 from app.transactions.views import transaction_routes
@@ -21,6 +22,8 @@ async def init_clients(app):
     """Initialize aiohttp application with required clients."""
     app["postgres"] = postgres = await PGPoolManager.create()
     app["redis"] = redis = await RedisPoolManager.create()
+
+    app["budget"] = Budget(postgres=postgres)
     LOGGER.debug("Clients has successfully initialized.")
 
     yield
@@ -52,6 +55,7 @@ def init_app():
     app.cleanup_ctx.append(init_clients)
     app.on_startup.append(init_constants)
 
+    app.middlewares.append(body_validator_middleware)
     app.middlewares.append(auth_middleware)
 
     return app
