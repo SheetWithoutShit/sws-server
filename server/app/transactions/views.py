@@ -8,7 +8,7 @@ from aiohttp import web
 transaction_routes = web.RouteTableDef()
 
 
-@transaction_routes.view(r"/transactions")
+@transaction_routes.view("/transactions")
 class TransactionsView(web.View):
     """Views to interact with user`s transactions."""
 
