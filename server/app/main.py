@@ -10,9 +10,10 @@ from core.database.redis import PoolManager as RedisPoolManager
 
 from middlewares import auth_middleware, body_validator_middleware
 from app.auth.views import auth_routes
-from app.budget.db import Budget
 from app.budget.views import budget_routes
+from app.profile.db import UserProfile
 from app.profile.views import profile_routes
+from app.transactions.db import Transaction
 from app.transactions.views import transaction_routes
 
 LOGGER = logging.getLogger(__name__)
@@ -23,7 +24,8 @@ async def init_clients(app):
     app["postgres"] = postgres = await PGPoolManager.create()
     app["redis"] = redis = await RedisPoolManager.create()
 
-    app["budget"] = Budget(postgres=postgres)
+    app["user_profile"] = UserProfile(postgres=postgres)
+    app["transaction"] = Transaction(postgres=postgres)
     LOGGER.debug("Clients has successfully initialized.")
 
     yield
