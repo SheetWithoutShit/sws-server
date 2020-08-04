@@ -1,8 +1,10 @@
 """This module provides budget views."""
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from aiohttp import web
+
+from app.utils import generate_days_period
 
 
 budget_routes = web.RouteTableDef()
@@ -39,5 +41,46 @@ class BudgetMonthView(web.View):
 
         return web.json_response(
             data={"success": True, "month_budget": month_budget, "year": year, "month": month},
+            status=200
+        )
+
+
+@budget_routes.view("/budget/daily")
+class BudgetWeekView(web.View):
+    """Views to interact with user daily budget report."""
+
+    async def get(self):
+        """Retrieve daily budgets reports for provided user."""
+        try:
+            start_date = datetime.fromtimestamp(self.request.query["start_ts"])
+            end_date = datetime.fromtimestamp(self.request.query["end_ts"])
+        except KeyError:
+            end_date = datetime.now()
+            start_date = end_date - timedelta(days=7)
+        except TypeError:
+            return web.json_response(
+                data={
+                    "success": False,
+                    "message": "Wrong input. Query arguments start_ts or end_ts is not correct."
+                },
+                status=400
+            )
+
+        budget = self.request.app["budget"]
+        daily_budgets = await budget.get_daily_budgets(self.request.user_id, start_date, end_date)
+        if daily_budgets is None:
+            return web.json_response(
+                data={"success": False, "message": "Couldn't retrieve user`s daily budgets."},
+                status=400
+            )
+
+        daily_budgets_map = {budget["date"]: budget["amount"] for budget in daily_budgets}
+        response = [{
+            "date": day.strftime("%Y.%m.%d"),
+            "amount": daily_budgets_map.get(day, "0")
+        } for day in generate_days_period(start_date, end_date)]
+
+        return web.json_response(
+            data={"success": True, "daily_budgets": response},
             status=200
         )
