@@ -1,6 +1,10 @@
-"""This module provides helper functionality."""
+"""This module provides helper functionality with time."""
 
 from datetime import timedelta
+
+
+DATE_FORMAT = "%Y.%m.%d"
+DATETIME_FORMAT = "%Y.%m.%d %H:%M:%S"
 
 
 def generate_days_period(start_date, end_date):

@@ -2,37 +2,39 @@
 
 import json
 
-import jwt
 from aiohttp import web
+
+from app.utils.jwt import decode_auth_token
+
+
+SAFE_ROUTES = [
+    "/user/signup",
+    "/user/signin"
+]
 
 
 @web.middleware
 async def auth_middleware(request, handler):
     """Check if authorization token in headers is correct."""
-    token = request.headers.get("Authorization")
-    secret = request.app["constants"]["SERVER_SECRET"]
-    jwt_algorithm = request.app["constants"]["JWT_ALGORITHM"]
+    if any([route == request.path for route in SAFE_ROUTES]):
+        return await handler(request)
 
+    token = request.headers.get("Authorization")
     if not token:
         return web.json_response(
             data={"success": False, "message": "You aren't authorized. Please provide authorization token."},
             status=401
         )
 
-    try:
-        payload = jwt.decode(token, secret, algorithm=jwt_algorithm)
-    except jwt.DecodeError:
+    secret_key = request.app["constants"]["SERVER_SECRET"]
+    result = decode_auth_token(token, secret_key)
+    if isinstance(result, str):
         return web.json_response(
-            data={"success": False, "message": "Wrong credentials. Your token is invalid."},
-            status=401
-        )
-    except jwt.ExpiredSignatureError:
-        return web.json_response(
-            data={"success": False, "message": "Wrong credentials. Your token is expired."},
+            data={"success": False, "message": f"Wrong credentials. {result}."},
             status=401
         )
 
-    request.user_id = payload["user_id"]
+    request.user_id = result["user_id"]
     return await handler(request)
 
 
