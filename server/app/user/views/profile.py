@@ -1,10 +1,10 @@
-"""This module provides user`s profile views."""
+"""This module provides user`s user views."""
 
 from datetime import datetime
 
 from aiohttp import web
 
-from app.validators import validate_budget
+from app.validators import validate_budget_income, validate_budget_savings
 
 
 profile_routes = web.RouteTableDef()
@@ -29,8 +29,8 @@ class UserProfileBudgetView(web.View):
                 status=400
             )
 
-        user_profile = self.request.app["user_profile"]
-        user_budget = await user_profile.get_profile_budget(self.request.user_id, year, month)
+        user = self.request.app["user"]
+        user_budget = await user.get_profile_budget(self.request.user_id, year, month)
         if not user_budget:
             return web.json_response(
                 data={"success": False, "message": "Couldn't retrieve user`s budget."},
@@ -56,18 +56,23 @@ class UserProfileBudgetView(web.View):
                 status=400
             )
 
-        errors = validate_budget(body)
-        if errors:
+        income, savings = body.get("income"), body.get("savings")
+        validation_errors = []
+        if income is not None:
+            validation_errors.extend(validate_budget_income(income))
+        if savings is not None:
+            validation_errors.extend(validate_budget_savings(savings))
+        if validation_errors:
             return web.json_response(
                 data={
                     "success": False,
-                    "message": f"Wrong input: {' '.join(errors)}"
+                    "message": f"Wrong input: {' '.join(validation_errors)}"
                 },
                 status=400
             )
 
-        user_profile = self.request.app["user_profile"]
-        updated = await user_profile.update_profile_budget(self.request.user_id, year, month, body)
+        user = self.request.app["user"]
+        updated = await user.update_profile_budget(self.request.user_id, year, month, body)
         if not updated:
             return web.json_response(
                 data={"success": False, "message": "Couldn't update user`s budget."},

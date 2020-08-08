@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 from aiohttp import web
 
-from app.utils import generate_days_period
+from app.utils.time import DATE_FORMAT, generate_days_period
 
 
 budget_routes = web.RouteTableDef()
@@ -76,7 +76,7 @@ class BudgetWeekView(web.View):
 
         daily_budgets_map = {budget["date"]: budget["amount"] for budget in daily_budgets}
         response = [{
-            "date": day.strftime("%Y.%m.%d"),
+            "date": day.strftime(DATE_FORMAT),
             "amount": daily_budgets_map.get(day, "0")
         } for day in generate_days_period(start_date, end_date)]
 

@@ -4,13 +4,11 @@ import logging
 
 from asyncpg import exceptions
 
-from app.db import DB
-
 
 LOGGER = logging.getLogger(__name__)
 
 
-class Budget(DB):
+class Budget:
     """Model that provides methods to work with user`s profile."""
 
     GET_MONTH_BUDGET = """
@@ -32,6 +30,10 @@ class Budget(DB):
             and timestamp between $2 and $3
         GROUP BY date
     """
+
+    def __init__(self, postgres=None):
+        """Initialize budget instance with required database clients."""
+        self._postgres = postgres
 
     async def get_month_budget(self, user_id, year, month):
         """Retrieve user budget information for specific month."""

@@ -4,13 +4,11 @@ import logging
 
 from asyncpg import exceptions
 
-from app.db import DB
-
 
 LOGGER = logging.getLogger(__name__)
 
 
-class Transaction(DB):
+class Transaction:
     """Model that provides methods to work with user`s transactions."""
 
     GET_TRANSACTIONS = """
@@ -19,6 +17,10 @@ class Transaction(DB):
         WHERE user_id = $1
             and timestamp between $2 and $3
     """
+
+    def __init__(self, postgres=None):
+        """Initialize transaction instance with required database clients."""
+        self._postgres = postgres
 
     async def get_transactions(self, user_id, start_date, end_date):
         """Retrieve transactions from database for provided user_id."""
