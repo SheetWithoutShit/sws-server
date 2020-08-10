@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 
 from aiohttp import web
 
+from app.errors import SWSDatabaseError
 from app.utils.time import DATE_FORMAT, generate_days_period
 
 
@@ -31,11 +32,13 @@ class BudgetMonthView(web.View):
                 status=400
             )
 
+        # TODO: capital
         budget = self.request.app["budget"]
-        month_budget = await budget.get_month_budget(self.request.user_id, year, month)
-        if month_budget is None:
+        try:
+            month_budget = await budget.get_month_budget(self.request.user_id, year, month)
+        except SWSDatabaseError as err:
             return web.json_response(
-                data={"success": False, "message": "Couldn't retrieve user`s month budget."},
+                data={"success": False, "message": str(err)},
                 status=400
             )
 
@@ -67,10 +70,11 @@ class BudgetWeekView(web.View):
             )
 
         budget = self.request.app["budget"]
-        daily_budgets = await budget.get_daily_budgets(self.request.user_id, start_date, end_date)
-        if daily_budgets is None:
+        try:
+            daily_budgets = await budget.get_daily_budgets(self.request.user_id, start_date, end_date)
+        except SWSDatabaseError as err:
             return web.json_response(
-                data={"success": False, "message": "Couldn't retrieve user`s daily budgets."},
+                data={"success": False, "message": str(err)},
                 status=400
             )
 

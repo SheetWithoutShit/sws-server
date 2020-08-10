@@ -45,6 +45,7 @@ async def init_constants(app):
     app["constants"] = constants = {}
 
     constants["SERVER_SECRET"] = os.environ["SERVER_SECRET"]
+    constants["JWT_EXP_DAYS"] = int(os.environ.get("JWT_EXP_DAYS", 7))
 
 
 def init_app():

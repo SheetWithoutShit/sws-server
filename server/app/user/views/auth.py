@@ -5,6 +5,8 @@ from aiohttp import web
 from app.utils.jwt import generate_auth_token
 from app.validators import validate_email, validate_password
 
+from app.errors import SWSDatabaseError
+
 
 auth_views = web.RouteTableDef()
 
@@ -35,10 +37,12 @@ class UserSignUp(web.View):
             )
 
         user = self.request.app["user"]
-        result = await user.create_user(email, password)
-        if isinstance(result, str):
+
+        try:
+            result = await user.create_user(email, password)
+        except SWSDatabaseError as err:
             return web.json_response(
-                data={"success": False, "message": result},
+                data={"success": False, "message": str(err)},
                 status=400
             )
 
@@ -70,10 +74,11 @@ class UserSignIn(web.View):
             )
 
         user = self.request.app["user"]
-        result = await user.get_user_by_email(email)
-        if isinstance(result, str):
+        try:
+            result = await user.get_user_by_email(email)
+        except SWSDatabaseError as err:
             return web.json_response(
-                data={"success": False, "message": result},
+                data={"success": False, "message": str(err)},
                 status=401
             )
 

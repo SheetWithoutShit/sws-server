@@ -4,6 +4,8 @@ import logging
 
 from asyncpg import exceptions
 
+from app.errors import SWSDatabaseError
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -41,7 +43,8 @@ class Budget:
             records = await self._postgres.fetch(self.GET_MONTH_BUDGET, user_id, year, month)
             return [dict(x) for x in records]
         except exceptions.PostgresError as err:
-            LOGGER.error("Couldn't retrieve budget for user=%s. Error: %s", user_id, err)
+            LOGGER.error("Couldn't retrieve month budget for user=%s. Error: %s", user_id, err)
+            raise SWSDatabaseError(f"Failed to retrieve month budget for user id {user_id}.")
 
     async def get_daily_budgets(self, user_id, start_date, end_date):
         """Retrieve daily budgets reports for specific period of time."""
@@ -50,3 +53,4 @@ class Budget:
             return [dict(x) for x in records]
         except exceptions.PostgresError as err:
             LOGGER.error("Couldn't retrieve daily budgets for user=%s. Error: %s", user_id, err)
+            raise SWSDatabaseError(f"Failed to retrieve daily budgets for user id {user_id}.")
