@@ -4,6 +4,8 @@ import logging
 
 from asyncpg import exceptions
 
+from app.errors import SWSDatabaseError
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -29,3 +31,4 @@ class Transaction:
             return [dict(x) for x in records]
         except (exceptions.PostgresError, AttributeError) as err:
             LOGGER.error("Couldn't retrieve transactions for user=%s. Error: %s", user_id, err)
+            raise SWSDatabaseError(f"Failed to retrieve transaction for user id {user_id}.")

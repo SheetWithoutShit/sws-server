@@ -6,6 +6,8 @@ import logging
 from asyncpg import exceptions
 import bcrypt
 
+from app.errors import SWSDatabaseError
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -56,7 +58,7 @@ class User:
         password_hash = bcrypt.hashpw(password_bin, bcrypt.gensalt(self.HASH_SALT_ROUNDS))
         return password_hash.decode("utf-8")
 
-    def check_password_hash(self, password_hash, password):
+    def check_password_hash(self, password_hash, password):  #pylint: disable=no-self-use
         """Check if provided passwords are equal."""
         password_hash_bin = password_hash.encode("utf-8")
         password_bin = password.encode("utf-8")
@@ -69,10 +71,10 @@ class User:
             user = await self._postgres.fetchone(self.INSERT_USER, email, password_hash)
             return dict(user)
         except exceptions.UniqueViolationError:
-            return f"The user with this email already exists: {email}."
+            raise SWSDatabaseError(f"A user with that email address already exists: {email}.")
         except exceptions.PostgresError as err:
             LOGGER.error("Could not create user=%s. Error: %s", email, err)
-            return f"Failed to create user {email}."
+            raise SWSDatabaseError("Failed to create a new user in database.")
 
     async def get_user_by_email(self, email):
         """Retrieve user from database by provided email."""
@@ -80,10 +82,10 @@ class User:
             record = await self._postgres.fetchone(self.GET_USER_BY_EMAIL, email)
             return dict(record)
         except TypeError:
-            return f"The user with this email doesn't exist: {email}."
-        except (exceptions.PostgresError, AttributeError) as err:
+            raise SWSDatabaseError(f"A user with this email does not exist: {email}.")
+        except exceptions.PostgresError as err:
             LOGGER.error("Could not retrieve user=%s. Error: %s", email, err)
-            return f"Failed to retrieve user {email} from database."
+            raise SWSDatabaseError(f"Failed to retrieve user {email} from database.")
 
     async def get_profile_budget(self, user_id, year, month):
         """Retrieve profile budget from database for provided user_id."""
@@ -92,6 +94,7 @@ class User:
             return dict(record)
         except (exceptions.PostgresError, AttributeError) as err:
             LOGGER.error("Couldn't retrieve profile budget for user=%s. Error: %s", user_id, err)
+            raise SWSDatabaseError(f"Failed to retrieve profile budget for user id {user_id}")
 
     async def update_profile_budget(self, user_id, year, month, data):
         """Update profile budget in database for provided user."""
@@ -103,3 +106,4 @@ class User:
             return await self._postgres.execute(self.UPDATE_PROFILE_BUDGET, user_id, year, month, *update_args)
         except exceptions.PostgresError as err:
             LOGGER.error("Could not update profile budget for user=%s. Error: %s", user_id, err)
+            raise SWSDatabaseError(f"Failed to update profile budget for user id {user_id}")

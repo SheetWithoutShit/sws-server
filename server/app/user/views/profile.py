@@ -4,6 +4,7 @@ from datetime import datetime
 
 from aiohttp import web
 
+from app.errors import SWSDatabaseError
 from app.validators import validate_budget_income, validate_budget_savings
 
 
@@ -30,10 +31,11 @@ class UserProfileBudgetView(web.View):
             )
 
         user = self.request.app["user"]
-        user_budget = await user.get_profile_budget(self.request.user_id, year, month)
-        if not user_budget:
+        try:
+            user_budget = await user.get_profile_budget(self.request.user_id, year, month)
+        except SWSDatabaseError as err:
             return web.json_response(
-                data={"success": False, "message": "Couldn't retrieve user`s budget."},
+                data={"success": False, "message": str(err)},
                 status=400
             )
 
@@ -72,10 +74,11 @@ class UserProfileBudgetView(web.View):
             )
 
         user = self.request.app["user"]
-        updated = await user.update_profile_budget(self.request.user_id, year, month, body)
-        if not updated:
+        try:
+            await user.update_profile_budget(self.request.user_id, year, month, body)
+        except SWSDatabaseError as err:
             return web.json_response(
-                data={"success": False, "message": "Couldn't update user`s budget."},
+                data={"success": False, "message": str(err)},
                 status=400
             )
 

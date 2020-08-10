@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 
 import jwt
 
+from app.errors import SWSTokenError
 from app.utils.time import DATETIME_FORMAT
 
 
@@ -29,6 +30,6 @@ def decode_auth_token(token, secret_key):
     try:
         return jwt.decode(token, secret_key)
     except jwt.DecodeError:
-        return "The token is invalid"
+        raise SWSTokenError("The token is invalid.")
     except jwt.ExpiredSignatureError:
-        return "The token has expired"
+        raise SWSTokenError("The token has expired.")

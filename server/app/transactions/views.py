@@ -4,6 +4,8 @@ from datetime import datetime
 
 from aiohttp import web
 
+from app.errors import SWSDatabaseError
+
 
 transaction_routes = web.RouteTableDef()
 
@@ -30,10 +32,11 @@ class TransactionsView(web.View):
             )
 
         transaction = self.request.app["transaction"]
-        transactions = await transaction.get_transactions(self.request.user_id, start_date, end_date)
-        if transactions is None:
+        try:
+            transactions = await transaction.get_transactions(self.request.user_id, start_date, end_date)
+        except SWSDatabaseError as err:
             return web.json_response(
-                data={"success": False, "message": "Couldn't retrieve user`s transactions."},
+                data={"success": False, "message": str(err)},
                 status=400
             )
 

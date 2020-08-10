@@ -4,6 +4,7 @@ import json
 
 from aiohttp import web
 
+from app.errors import SWSTokenError
 from app.utils.jwt import decode_auth_token
 
 
@@ -27,14 +28,15 @@ async def auth_middleware(request, handler):
         )
 
     secret_key = request.app["constants"]["SERVER_SECRET"]
-    result = decode_auth_token(token, secret_key)
-    if isinstance(result, str):
+    try:
+        payload = decode_auth_token(token, secret_key)
+    except SWSTokenError as err:
         return web.json_response(
-            data={"success": False, "message": f"Wrong credentials. {result}."},
+            data={"success": False, "message": f"Wrong credentials. {str(err)}"},
             status=401
         )
 
-    request.user_id = result["user_id"]
+    request.user_id = payload["user_id"]
     return await handler(request)
 
 
