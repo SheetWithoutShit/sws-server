@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 import jwt
 
-from app.errors import SWSTokenError
+from app.utils.errors import SWSTokenError
 from app.utils.time import DATETIME_FORMAT
 
 

@@ -4,7 +4,7 @@ import json
 
 from aiohttp import web
 
-from app.errors import SWSTokenError
+from app.utils.errors import SWSTokenError
 from app.utils.jwt import decode_auth_token
 
 
@@ -27,7 +27,7 @@ async def auth_middleware(request, handler):
             status=401
         )
 
-    secret_key = request.app["constants"]["SERVER_SECRET"]
+    secret_key = request.app.config.SERVER_SECRET
     try:
         payload = decode_auth_token(token, secret_key)
     except SWSTokenError as err:
