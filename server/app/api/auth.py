@@ -1,11 +1,13 @@
 """This module provides user`s auth views."""
 
+from http import HTTPStatus
+
 from aiohttp import web
 
+from app.utils.errors import SWSDatabaseError
+from app.utils.validators import validate_email, validate_password
 from app.utils.jwt import generate_auth_token
-from app.validators import validate_email, validate_password
-
-from app.errors import SWSDatabaseError
+from app.models.user import User
 
 
 auth_views = web.RouteTableDef()
@@ -26,32 +28,32 @@ class UserSignUp(web.View):
                     "success": False,
                     "message": "Wrong input. Required fields email or password is not provided."
                 },
-                status=400
+                status=HTTPStatus.BAD_REQUEST
             )
 
         validation_errors = validate_password(password) + validate_email(email)
         if validation_errors:
             return web.json_response(
                 data={"success": False, "message": f"Wrong input: {' '.join(validation_errors)}"},
-                status=400
+                status=HTTPStatus.BAD_REQUEST
             )
 
-        user = self.request.app["user"]
-
         try:
-            result = await user.create_user(email, password)
+            user = await User.create(email=email, password=password)
         except SWSDatabaseError as err:
             return web.json_response(
                 data={"success": False, "message": str(err)},
-                status=400
+                status=HTTPStatus.BAD_REQUEST
             )
 
-        secret_key = self.request.app["constants"]["SERVER_SECRET"]
-        jwt_exp_days = self.request.app["constants"]["JWT_EXP_DAYS"]
-        token = generate_auth_token(result["id"], secret_key, jwt_exp_days)
+        token = generate_auth_token(
+            user.id,
+            secret_key=self.request.app.config.SERVER_SECRET,
+            exp_days=self.request.app.config.JWT_EXP_DAYS
+        )
         return web.json_response(
             data={"success": True, **token},
-            status=200
+            status=HTTPStatus.OK
         )
 
 
@@ -70,33 +72,33 @@ class UserSignIn(web.View):
                     "success": False,
                     "message": "Wrong input. Required fields email or password is not provided."
                 },
-                status=400
+                status=HTTPStatus.BAD_REQUEST
             )
 
-        user = self.request.app["user"]
         try:
-            result = await user.get_user_by_email(email)
+            user = await User.get_by_email(email)
         except SWSDatabaseError as err:
             return web.json_response(
                 data={"success": False, "message": str(err)},
-                status=401
+                status=HTTPStatus.UNAUTHORIZED
             )
 
-        is_correct = user.check_password_hash(result["password"], password)
+        is_correct = user.check_password_hash(password)
         if not is_correct:
             return web.json_response(
                 data={
                     "success": False,
                     "message": f"The provided password for user {email} is not correct."
                 },
-                status=401
+                status=HTTPStatus.UNAUTHORIZED
             )
 
-
-        secret_key = self.request.app["constants"]["SERVER_SECRET"]
-        jwt_exp_days = self.request.app["constants"]["JWT_EXP_DAYS"]
-        token = generate_auth_token(result["id"], secret_key, jwt_exp_days)
+        token = generate_auth_token(
+            user.id,
+            secret_key=self.request.app.config.SERVER_SECRET,
+            exp_days=self.request.app.config.JWT_EXP_DAYS
+        )
         return web.json_response(
             data={"success": True, **token},
-            status=200
+            status=HTTPStatus.OK
         )

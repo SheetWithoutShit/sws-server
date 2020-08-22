@@ -49,6 +49,10 @@ def validate_password(password):
 def validate_budget_income(income):
     """Validate budget income value."""
     errors = []
+    if income is None:
+        errors.append("Income can not be empty.")
+        return errors
+
     if not isinstance(income, float):
         errors.append("Income must be float type.")
         return errors
@@ -62,6 +66,10 @@ def validate_budget_income(income):
 def validate_budget_savings(savings):
     """Validate budget savings input."""
     errors = []
+    if savings is None:
+        errors.append("Savings can not be empty.")
+        return errors
+
     if not isinstance(savings, int):
         errors.append("Savings must be integer type.")
         return errors

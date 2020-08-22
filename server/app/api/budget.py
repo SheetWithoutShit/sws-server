@@ -1,17 +1,19 @@
-"""This module provides user`s user views."""
+"""This module provides budget views."""
 
+from http import HTTPStatus
 from datetime import datetime
 
 from aiohttp import web
 
-from app.errors import SWSDatabaseError
-from app.validators import validate_budget_income, validate_budget_savings
+from app.models.budget import Budget
+from app.utils.errors import SWSDatabaseError
+from app.utils.validators import validate_budget_savings, validate_budget_income
 
 
-profile_routes = web.RouteTableDef()
+budget_routes = web.RouteTableDef()
 
 
-@profile_routes.view("/user/profile/budget")
+@budget_routes.view("/budget")
 class UserProfileBudgetView(web.View):
     """Views to interact with user`s profile budget data."""
 
@@ -27,21 +29,20 @@ class UserProfileBudgetView(web.View):
                     "success": False,
                     "message": "Wrong input. Query arguments year or month is not correct"
                 },
-                status=400
+                status=HTTPStatus.BAD_REQUEST
             )
 
-        user = self.request.app["user"]
         try:
-            user_budget = await user.get_profile_budget(self.request.user_id, year, month)
+            budget = await Budget.get_budget(self.request.user_id, year, month)
         except SWSDatabaseError as err:
             return web.json_response(
                 data={"success": False, "message": str(err)},
-                status=400
+                status=HTTPStatus.BAD_REQUEST
             )
 
         return web.json_response(
-            data={"success": True, "budget": user_budget},
-            status=200
+            data={"success": True, "budget": budget.as_dict()},
+            status=HTTPStatus.OK
         )
 
     async def put(self):
@@ -55,34 +56,29 @@ class UserProfileBudgetView(web.View):
                     "success": False,
                     "message": "Wrong input. Required fields year or month is not correct."
                 },
-                status=400
+                status=HTTPStatus.BAD_REQUEST
             )
 
         income, savings = body.get("income"), body.get("savings")
-        validation_errors = []
-        if income is not None:
-            validation_errors.extend(validate_budget_income(income))
-        if savings is not None:
-            validation_errors.extend(validate_budget_savings(savings))
+        validation_errors = validate_budget_income(income) + validate_budget_savings(savings)
         if validation_errors:
             return web.json_response(
                 data={
                     "success": False,
                     "message": f"Wrong input: {' '.join(validation_errors)}"
                 },
-                status=400
+                status=HTTPStatus.BAD_REQUEST
             )
 
-        user = self.request.app["user"]
         try:
-            await user.update_profile_budget(self.request.user_id, year, month, body)
+            await Budget.update_budget(self.request.user_id, year, month, savings, income)
         except SWSDatabaseError as err:
             return web.json_response(
                 data={"success": False, "message": str(err)},
-                status=400
+                status=HTTPStatus.BAD_REQUEST
             )
 
         return web.json_response(
             data={"success": True, "message": "The user`s budget was updated."},
-            status=200
+            status=HTTPStatus.OK
         )
