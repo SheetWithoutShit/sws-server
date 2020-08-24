@@ -8,6 +8,8 @@ Create Date: 2020-08-24 07:30:30.991063
 from alembic import op
 import sqlalchemy as sa
 
+from migrations.data import insert_mcc_data
+
 
 # revision identifiers, used by Alembic.
 revision = '61fe466a0180'
@@ -89,6 +91,7 @@ def upgrade():
     )
     op.create_index('transaction_user_timestamp_idx', 'transaction', ['user_id', 'timestamp'], unique=False)
     op.execute(create_budget_trigger)
+    op.execute(insert_mcc_data)
     # ### end Alembic commands ###
 
 
