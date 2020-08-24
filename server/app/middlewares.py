@@ -9,6 +9,7 @@ from app.utils.jwt import decode_auth_token
 
 
 SAFE_ROUTES = [
+    "/health",
     "/user/signup",
     "/user/signin"
 ]

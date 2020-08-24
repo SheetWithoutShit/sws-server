@@ -5,7 +5,23 @@ from http import HTTPStatus
 from aiohttp import web
 
 
-def handle_404(request):
+internal_routes = web.RouteTableDef()
+
+
+@internal_routes.get("/health")
+async def health_view(request):
+    """Return health OK http status."""
+    return web.json_response(
+        data={
+            "success": True,
+            "message": "OK",
+            "url": str(request.url)
+        },
+        status=HTTPStatus.OK
+    )
+
+
+async def handle_404(request):
     """Return custom response for 404 http status code."""
     return web.json_response(
         data={
@@ -17,7 +33,7 @@ def handle_404(request):
     )
 
 
-def handle_405(request):
+async def handle_405(request):
     """Return custom response for 405 http status code."""
     return web.json_response(
         data={
@@ -29,8 +45,8 @@ def handle_405(request):
     )
 
 
-def handle_500(request):
-    """Return custom response for 505 http status code."""
+async def handle_500(request):
+    """Return custom response for 500 http status code."""
     return web.json_response(
         data={
             "success": False,
