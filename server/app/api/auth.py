@@ -10,10 +10,10 @@ from app.utils.jwt import generate_auth_token
 from app.models.user import User
 
 
-auth_views = web.RouteTableDef()
+auth_routes = web.RouteTableDef()
 
 
-@auth_views.view("/user/signup")
+@auth_routes.view("/user/signup")
 class UserSignUp(web.View):
     """Class that includes functionality to sign up user in system."""
 
@@ -57,7 +57,7 @@ class UserSignUp(web.View):
         )
 
 
-@auth_views.view("/user/signin")
+@auth_routes.view("/user/signin")
 class UserSignIn(web.View):
     """Class that includes functionality to sign in user in system."""
 

@@ -7,8 +7,9 @@ from aiohttp.web import Application
 from app import config
 from app.db import db
 from app.middlewares import auth_middleware, body_validator_middleware, error_middleware
+from app.api.index import internal_routes
 from app.api.budget import budget_routes
-from app.api.auth import auth_views
+from app.api.auth import auth_routes
 from app.api.transaction import transaction_routes
 from app.api.index import handle_404, handle_405, handle_500
 
@@ -27,9 +28,10 @@ def init_app():
 
     db.init_app(app, {"dsn": config.POSTGRES_DSN})
 
-    app.add_routes(auth_views)
+    app.add_routes(auth_routes)
     app.add_routes(budget_routes)
     app.add_routes(transaction_routes)
+    app.add_routes(internal_routes)
 
     app.on_startup.append(init_config)
 
