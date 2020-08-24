@@ -14,6 +14,24 @@ SAFE_ROUTES = [
 ]
 
 
+def error_middleware(error_handlers):
+    """Return custom error handler."""
+
+    @web.middleware
+    async def error_middleware_inner(request, handler):
+        """Handle specific http errors using custom views."""
+        try:
+            return await handler(request)
+        except web.HTTPException as ex:
+            error_handler = error_handlers.get(ex.status)
+            if error_handler:
+                return await error_handler(request)
+
+            raise ex
+
+    return error_middleware_inner
+
+
 @web.middleware
 async def auth_middleware(request, handler):
     """Check if authorization token in headers is correct."""

@@ -6,10 +6,11 @@ from aiohttp.web import Application
 
 from app import config
 from app.db import db
-from app.middlewares import auth_middleware, body_validator_middleware
+from app.middlewares import auth_middleware, body_validator_middleware, error_middleware
 from app.api.budget import budget_routes
 from app.api.auth import auth_views
 from app.api.transaction import transaction_routes
+from app.api.index import handle_404, handle_405, handle_500
 
 
 LOGGER = logging.getLogger(__name__)
@@ -35,5 +36,10 @@ def init_app():
     app.middlewares.append(db)
     app.middlewares.append(body_validator_middleware)
     app.middlewares.append(auth_middleware)
+    app.middlewares.append(error_middleware({
+        404: handle_404,
+        405: handle_405,
+        500: handle_500
+    }))
 
     return app
