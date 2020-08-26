@@ -10,6 +10,7 @@ from app.middlewares import auth_middleware, body_validator_middleware, error_mi
 from app.api.index import internal_routes
 from app.api.budget import budget_routes
 from app.api.auth import auth_routes
+from app.api.user import user_routes
 from app.api.transaction import transaction_routes
 from app.api.index import handle_404, handle_405, handle_500
 
@@ -32,6 +33,7 @@ def init_app():
     app.add_routes(budget_routes)
     app.add_routes(transaction_routes)
     app.add_routes(internal_routes)
+    app.add_routes(user_routes)
 
     app.on_startup.append(init_config)
 
