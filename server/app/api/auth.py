@@ -38,8 +38,9 @@ class UserSignUp(web.View):
                 status=HTTPStatus.BAD_REQUEST
             )
 
+        password_hash = User.generate_password_hash(password)
         try:
-            user = await User.create(email=email, password=password)
+            user = await User.create_user(email=email, password=password_hash)
         except SWSDatabaseError as err:
             return web.json_response(
                 data={"success": False, "message": str(err)},
