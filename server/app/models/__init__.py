@@ -9,14 +9,14 @@ from app.utils.time import DATETIME_FORMAT
 class BaseModelMixin:
     """Mixin that provides base model helper functionality."""
 
-    hidden_columns = None
+    private_columns = []
 
     def as_dict(self):
         """Return instance information in dictionary format."""
         result = {}
         for column in self.__table__.columns:
             column_name = column.name
-            if self.hidden_columns and column_name in self.hidden_columns:
+            if column_name in self.private_columns:
                 continue
 
             value = getattr(self, column_name)

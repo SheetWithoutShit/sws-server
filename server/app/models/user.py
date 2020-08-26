@@ -28,6 +28,15 @@ class User(db.Model, BaseModelMixin):
     notifications_enabled = db.Column(db.Boolean, nullable=False, default=False)
     monobank_token = db.Column(db.String(255), nullable=False, default="")
 
+    private_columns = ["password", "monobank_token"]
+
+    def as_dict(self):
+        """Return user instance information in dictionary format."""
+        user_dict = super().as_dict()
+        user_dict["monobank_enabled"] = bool(self.monobank_token)
+
+        return user_dict
+
     @staticmethod
     def generate_password_hash(password):
         """Return generated hash for provided password."""
@@ -54,13 +63,27 @@ class User(db.Model, BaseModelMixin):
             raise SWSDatabaseError("Failed to create a new user in database.")
 
     @classmethod
+    async def get_by_id(cls, id_):
+        """Return queried user by provided id."""
+        try:
+            user = await cls.get(id_)
+        except SQLAlchemyError as err:
+            LOGGER.error("Could not retrieve user by id=%s. Error: %s", id_, err)
+            raise SWSDatabaseError(f"Failed to retrieve user by id={id_}")
+
+        if not user:
+            raise SWSDatabaseError(f"A user with this id does not exist: {id_}.")
+
+        return user
+
+    @classmethod
     async def get_by_email(cls, email):
         """Return queried user by provided email."""
         try:
             user = await User.query.where(User.email == email).gino.first()
         except SQLAlchemyError as err:
-            LOGGER.error("Could not create user=%s. Error: %s", email, err)
-            raise SWSDatabaseError("Failed to create a new user in database.")
+            LOGGER.error("Could not retrieve user by email=%s. Error: %s", email, err)
+            raise SWSDatabaseError(f"Failed to retrieve user by email={email}")
 
         if not user:
             raise SWSDatabaseError(f"A user with this email does not exist: {email}.")
