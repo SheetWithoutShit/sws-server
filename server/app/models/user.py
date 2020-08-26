@@ -7,7 +7,7 @@ from asyncpg import exceptions
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.db import db
-from app.models import BaseModelMixin
+from app.models import BaseModelMixin, parse_status
 from app.utils.errors import SWSDatabaseError
 
 
@@ -51,16 +51,31 @@ class User(db.Model, BaseModelMixin):
         return bcrypt.checkpw(password_bin, password_hash_bin)
 
     @classmethod
-    async def create(cls, email, password):
+    async def create_user(cls, email, password):
         """Create a new user in database."""
-        password_hash = User.generate_password_hash(password)
         try:
-            return await super().create(email=email, password=password_hash)
+            return await super().create(email=email, password=password)
         except exceptions.UniqueViolationError:
             raise SWSDatabaseError(f"A user with that email address already exists: {email}.")
         except SQLAlchemyError as err:
             LOGGER.error("Could not create user=%s. Error: %s", email, err)
             raise SWSDatabaseError("Failed to create a new user in database.")
+
+    @classmethod
+    async def update_user(cls, user_id, **kwargs):
+        """Update user instance in database by user_id."""
+        try:
+            status, _ = await cls.update \
+                .values(**kwargs) \
+                .where(cls.id == user_id) \
+                .gino.status()
+        except SQLAlchemyError as err:
+            LOGGER.error("Couldn't update user with id=%s. Error: %s", user_id, err)
+            raise SWSDatabaseError(f"Failed to update user with id={user_id}")
+
+        updated = parse_status(status)
+        if not updated:
+            raise SWSDatabaseError("The user was not updated.")
 
     @classmethod
     async def get_by_id(cls, id_):

@@ -55,8 +55,8 @@ class Budget(db.Model, BaseModelMixin):
                     (cls.month == month)) \
                 .gino.status()
         except SQLAlchemyError as err:
-            LOGGER.error("Couldn't retrieve budget for user=%s. Error: %s", user_id, err)
-            raise SWSDatabaseError(f"Failed to retrieve budget for user id {user_id}")
+            LOGGER.error("Couldn't update budget for user=%s. Error: %s", user_id, err)
+            raise SWSDatabaseError(f"Failed to update budget for user id {user_id}")
 
         updated = parse_status(status)
         if not updated:
