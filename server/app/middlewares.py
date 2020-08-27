@@ -1,17 +1,19 @@
 """This module provides middlewares for server application."""
 
 import json
+from http import HTTPStatus
 
 from aiohttp import web
 
 from app.utils.errors import SWSTokenError
-from app.utils.jwt import decode_auth_token
+from app.utils.jwt import decode_token
 
 
 SAFE_ROUTES = [
     "/health",
-    "/user/signup",
-    "/user/signin"
+    "/auth/signup",
+    "/auth/signin",
+    "/auth/refresh_access"
 ]
 
 
@@ -43,16 +45,16 @@ async def auth_middleware(request, handler):
     if not token:
         return web.json_response(
             data={"success": False, "message": "You aren't authorized. Please provide authorization token."},
-            status=401
+            status=HTTPStatus.UNAUTHORIZED
         )
 
     secret_key = request.app.config.SERVER_SECRET
     try:
-        payload = decode_auth_token(token, secret_key)
+        payload = decode_token(token, secret_key)
     except SWSTokenError as err:
         return web.json_response(
             data={"success": False, "message": f"Wrong credentials. {str(err)}"},
-            status=401
+            status=HTTPStatus.UNAUTHORIZED
         )
 
     request.user_id = payload["user_id"]
@@ -69,7 +71,7 @@ async def body_validator_middleware(request, handler):
         except json.decoder.JSONDecodeError:
             return web.json_response(
                 data={"success": False, "message": "Wrong input. Can't deserialize body input."},
-                status=400
+                status=HTTPStatus.BAD_REQUEST
             )
 
     return await handler(request)

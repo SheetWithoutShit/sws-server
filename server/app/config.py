@@ -3,7 +3,8 @@
 import os
 
 
-JWT_EXP_DAYS = 7
+ACCESS_JWT_EXP_DAYS = int(os.getenv("ACCESS_JWT_EXP_DAYS", "7"))
+REFRESH_JWT_EXP_DAYS = int(os.getenv("REFRESH_JWT_EXP_DAYS", "30"))
 SERVER_SECRET = os.getenv("SERVER_SECRET")
 POSTGRES_DSN = "postgresql://{user}:{password}@{host}:{port}/{database}".format(
     host=os.getenv("POSTGRES_HOST", "localhost"),

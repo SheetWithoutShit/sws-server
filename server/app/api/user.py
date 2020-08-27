@@ -33,7 +33,7 @@ class UserView(web.View):
 
 
 @user_routes.view("/user/password")
-class UserView(web.View):
+class UserPasswordView(web.View):
     """Class that includes functionality to work with user password in system."""
 
     async def put(self):
@@ -63,7 +63,7 @@ class UserView(web.View):
             return web.json_response(
                 data={
                     "success": False,
-                    "message": f"The provided old password is not correct."
+                    "message": "The provided old password is not correct."
                 },
                 status=HTTPStatus.BAD_REQUEST
             )
