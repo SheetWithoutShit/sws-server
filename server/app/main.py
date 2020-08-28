@@ -3,6 +3,7 @@
 import logging
 
 from aiohttp.web import Application
+from aiojobs.aiohttp import setup as aiojobs_setup
 
 from app import config
 from app.db import db
@@ -28,6 +29,8 @@ def init_app():
     app = Application()
 
     db.init_app(app, {"dsn": config.POSTGRES_DSN})
+
+    aiojobs_setup(app)
 
     app.add_routes(auth_routes)
     app.add_routes(budget_routes)
