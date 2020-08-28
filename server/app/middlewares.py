@@ -13,7 +13,8 @@ SAFE_ROUTES = [
     "/health",
     "/auth/signup",
     "/auth/signin",
-    "/auth/refresh_access"
+    "/auth/refresh_access",
+    "/auth/reset_password"
 ]
 
 
