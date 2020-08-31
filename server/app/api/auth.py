@@ -100,12 +100,12 @@ class AuthSignIn(web.View):
             )
 
         token, token_exp = generate_token(
-            secret_key=config.SERVER_SECRET,
+            secret_key=config.JWT_SECRET_KEY,
             private_claims={"user_id": user.id},
             exp_days=config.ACCESS_JWT_EXP_DAYS
         )
         refresh_token, refresh_token_exp = generate_token(
-            secret_key=config.SERVER_SECRET,
+            secret_key=config.JWT_SECRET_KEY,
             private_claims={"user_id": user.id},
             exp_days=config.REFRESH_JWT_EXP_DAYS
         )
@@ -140,7 +140,7 @@ class AuthRefreshAccess(web.View):
             )
 
         try:
-            payload = decode_token(refresh_token, config.SERVER_SECRET)
+            payload = decode_token(refresh_token, config.JWT_SECRET_KEY)
         except SWSTokenError as err:
             return web.json_response(
                 data={"success": False, "message": f"Wrong refresh access token. {str(err)}"},
@@ -149,12 +149,12 @@ class AuthRefreshAccess(web.View):
 
         user_id = payload["user_id"]
         token, token_exp = generate_token(
-            secret_key=config.SERVER_SECRET,
+            secret_key=config.JWT_SECRET_KEY,
             private_claims={"user_id": user_id},
             exp_days=config.ACCESS_JWT_EXP_DAYS
         )
         refresh_token, refresh_token_exp = generate_token(
-            secret_key=config.SERVER_SECRET,
+            secret_key=config.JWT_SECRET_KEY,
             private_claims={"user_id": user_id},
             exp_days=config.REFRESH_JWT_EXP_DAYS
         )

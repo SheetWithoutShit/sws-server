@@ -9,13 +9,13 @@ from app.utils.errors import SWSTokenError
 from app.utils.jwt import decode_token
 
 
-SAFE_ROUTES = [
+SAFE_ROUTES = (
     "/health",
     "/auth/signup",
     "/auth/signin",
     "/auth/refresh_access",
     "/auth/reset_password"
-]
+)
 
 
 def error_middleware(error_handlers):
@@ -39,7 +39,7 @@ def error_middleware(error_handlers):
 @web.middleware
 async def auth_middleware(request, handler):
     """Check if authorization token in headers is correct."""
-    if any([route == request.path for route in SAFE_ROUTES]):
+    if request.path.startswith(SAFE_ROUTES):
         return await handler(request)
 
     token = request.headers.get("Authorization")
@@ -49,7 +49,8 @@ async def auth_middleware(request, handler):
             status=HTTPStatus.UNAUTHORIZED
         )
 
-    secret_key = request.app.config.SERVER_SECRET
+    secret_key = request.app.config.JWT_SECRET_KEY
+    token = token.split("Bearer ")[-1]
     try:
         payload = decode_token(token, secret_key)
     except SWSTokenError as err:
