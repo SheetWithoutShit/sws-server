@@ -26,7 +26,7 @@ RESET_PASSWORD_MAIL = """
 """
 
 
-def _create_email_message(receiver, subject, html):
+def create_email_message(receiver, subject, html):
     """Create dummy email message."""
     message = EmailMessage()
 
@@ -50,11 +50,11 @@ async def send_mail(message):
     await smtp.send_message(message)
 
 
-async def send_reset_password_mail(user_email, reset_password_url, user_first_name=None):
+async def send_reset_password_mail(user, reset_password_url):
     """Send reset password email message to user"""
-    username = user_first_name if user_first_name else user_email
+    username = user.first_name if user.first_name else user.email
 
     html = RESET_PASSWORD_MAIL.format(username=username, reset_password_url=reset_password_url)
-    message = _create_email_message(user_email, RESET_PASSWORD_SUBJECT, html)
+    message = create_email_message(user.email, RESET_PASSWORD_SUBJECT, html)
 
     await send_mail(message)

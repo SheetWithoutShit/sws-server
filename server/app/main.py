@@ -2,8 +2,12 @@
 
 import logging
 
+import jinja2
+import aiohttp_jinja2
 from aiohttp.web import Application
 from aiojobs.aiohttp import setup as aiojobs_setup
+
+from core.database.redis import PoolManager as RedisPoolManager
 
 from app import config
 from app.db import db
@@ -22,6 +26,18 @@ LOGGER = logging.getLogger(__name__)
 async def init_config(app):
     """Initialize aiohttp application with required constants."""
     setattr(app, "config", config)
+    LOGGER.debug("Application config has successfully set up.")
+
+
+async def init_clients(app):
+    """Initialize aiohttp application with clients."""
+    app["redis"] = redis = await RedisPoolManager.create()
+    LOGGER.debug("Clients has successfully initialized.")
+
+    yield
+
+    await redis.close()
+    LOGGER.debug("Clients has successfully closed.")
 
 
 def init_app():
@@ -31,6 +47,7 @@ def init_app():
     db.init_app(app, {"dsn": config.POSTGRES_DSN})
 
     aiojobs_setup(app)
+    aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader(config.TEMPLATES_DIR))
 
     app.add_routes(auth_routes)
     app.add_routes(budget_routes)
@@ -39,6 +56,7 @@ def init_app():
     app.add_routes(user_routes)
 
     app.on_startup.append(init_config)
+    app.cleanup_ctx.append(init_clients)
 
     app.middlewares.append(db)
     app.middlewares.append(body_validator_middleware)
