@@ -1,16 +1,19 @@
 """This module provides auth views."""
 
+import uuid
 from http import HTTPStatus
 
 from aiohttp import web
 from aiojobs.aiohttp import spawn
+from aiohttp_jinja2 import render_template
 
+from app.models.user import User
 from app.utils.errors import SWSDatabaseError
 from app.utils.validators import validate_email, validate_password
 from app.utils.jwt import generate_token, decode_token
 from app.utils.errors import SWSTokenError
 from app.utils.mail import send_reset_password_mail
-from app.models.user import User
+from app.config import RESET_PASSWORD_EXPIRE, RESET_PASSWORD_TEMPLATE
 
 
 auth_routes = web.RouteTableDef()
@@ -226,9 +229,30 @@ class AuthChangePasswordView(web.View):
 class AuthResetPasswordView(web.View):
     """Class that includes functionality to kick off user password resetting."""
 
+    async def get(self):
+        """Render reset password form."""
+        try:
+            reset_password_code = self.request.query["reset_password_code"]
+        except KeyError:
+            return web.json_response(
+                data={
+                    "success": False,
+                    "message": "Wrong input. Required param code is not provided."
+                },
+                status=HTTPStatus.BAD_REQUEST
+            )
+
+        return render_template(
+            "reset_password.html",
+            self.request,
+            {"reset_password_code": reset_password_code}
+        )
+
     async def post(self):
         """Kick off user password resetting."""
         body = self.request.body
+        redis = self.request.app["redis"]
+
         try:
             email = body["email"]
         except KeyError:
@@ -248,15 +272,67 @@ class AuthResetPasswordView(web.View):
                 status=HTTPStatus.BAD_REQUEST
             )
 
-        # TODO: reset password url is the same as request.url until reset password form is not implemented
-        await spawn(
-            self.request,
-            send_reset_password_mail(user.email, str(self.request.url), user_first_name=user.first_name)
-        )
+        reset_password_code = str(uuid.uuid4())
+        reset_password_key = RESET_PASSWORD_TEMPLATE.format(code=reset_password_code)
+        await redis.set(reset_password_key, user.id, RESET_PASSWORD_EXPIRE)
+
+        reset_password_url = self.request.url.update_query({"reset_password_code": reset_password_code})
+        await spawn(self.request, send_reset_password_mail(user, str(reset_password_url)))
+
         return web.json_response(
             data={
                 "success": True,
                 "message": f"The email with link for password resetting should soon be delivered to {user.email}."
             },
+            status=HTTPStatus.OK
+        )
+
+    async def put(self):
+        """Create a new password for user."""
+        body = self.request.body
+        redis = self.request.app["redis"]
+
+        try:
+            new_password = body["new_password"]
+            reset_password_code = body["reset_password_code"]
+        except KeyError:
+            return web.json_response(
+                data={
+                    "success": False,
+                    "message": "Wrong input. Required field new_password or reset_password_code is not provided."
+                },
+                status=HTTPStatus.BAD_REQUEST
+            )
+
+        reset_password_key = RESET_PASSWORD_TEMPLATE.format(code=reset_password_code)
+        user_id = await redis.get(reset_password_key)
+        if user_id is None:
+            return web.json_response(
+                data={
+                    "success": False,
+                    "message": "Wrong input. Required field reset_password_code is not correct or expired."
+                },
+                status=HTTPStatus.BAD_REQUEST
+            )
+
+        validation_errors = validate_password(new_password)
+        if validation_errors:
+            return web.json_response(
+                data={"success": False, "message": f"Invalid new password: {' '.join(validation_errors)}"},
+                status=HTTPStatus.BAD_REQUEST
+            )
+
+        password_hash = User.generate_password_hash(new_password)
+        try:
+            await User.update_user(int(user_id), password=password_hash)
+        except SWSDatabaseError:
+            return web.json_response(
+                data={"success": False, "message": "Failed to update user password."},
+                status=HTTPStatus.BAD_REQUEST
+            )
+
+        await spawn(self.request, redis.remove(reset_password_key))
+        return web.json_response(
+            data={"success": True, "message": "The password was changed successfully."},
             status=HTTPStatus.OK
         )
