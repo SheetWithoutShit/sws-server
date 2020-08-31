@@ -8,21 +8,21 @@ from app.utils.errors import SWSTokenError
 from app.utils.time import DATETIME_FORMAT
 
 
-def generate_token(secret_key, private_claims=None, exp_days=7):
+def generate_token(secret_key, private_claims=None, exp_days=None):
     """Return encoded json web token."""
-    if not private_claims:
-        private_claims = {}
-
+    token_exp = None
     now = datetime.now()
-    exp = now + timedelta(days=exp_days)
-    payload = {
-        "exp": exp,
-        "iat": now,
-        **private_claims
-    }
-    token = jwt.encode(payload, secret_key).decode("UTF-8")
-    token_exp = exp.strftime(DATETIME_FORMAT)
+    payload = {"iat": now}
 
+    if exp_days is not None:
+        exp = now + timedelta(days=exp_days)
+        payload.update({"exp": exp})
+        token_exp = exp.strftime(DATETIME_FORMAT)
+
+    if private_claims:
+        payload.update(private_claims)
+
+    token = jwt.encode(payload, secret_key).decode("UTF-8")
     return token, token_exp
 
 

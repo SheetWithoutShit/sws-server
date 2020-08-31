@@ -1,7 +1,9 @@
 """This module provides functionality to interact with transactions in database."""
 
+import asyncio
 import logging
 
+from asyncpg import exceptions
 from sqlalchemy import between, extract, func, cast
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -28,6 +30,28 @@ class Transaction(db.Model, BaseModelMixin):
     info = db.Column(db.String(255), nullable=False, default="")
 
     _transaction_user_timestamp_idx = db.Index("transaction_user_timestamp_idx", "user_id", "timestamp")
+
+    @classmethod
+    async def create_transaction(cls, transaction):
+        """Create a new transaction in database."""
+        try:
+            return await super().create(**transaction)
+        except exceptions.UniqueViolationError:
+            LOGGER.error("A transaction with that id already exists. Transaction: %s", transaction)
+            raise SWSDatabaseError(f"A transaction with that id already exists: {transaction}.")
+        except SQLAlchemyError as err:
+            LOGGER.error("Couldn't create transaction. Error: %s", err)
+            raise SWSDatabaseError("Failed to create a new transaction in database.")
+
+    @classmethod
+    async def create_bulk_transactions(cls, transactions):
+        """Bulk create transactions."""
+        try:
+            transactions = await asyncio.gather(*[cls.create_transaction(t) for t in transactions])
+        except SWSDatabaseError:
+            return []
+
+        return transactions
 
     @classmethod
     async def get_transactions(cls, user_id, start_date, end_date):

@@ -4,6 +4,7 @@ import logging
 
 import jinja2
 import aiohttp_jinja2
+import requests
 from aiohttp.web import Application
 from aiojobs.aiohttp import setup as aiojobs_setup
 
@@ -25,6 +26,13 @@ LOGGER = logging.getLogger(__name__)
 
 async def init_config(app):
     """Initialize aiohttp application with required constants."""
+    if config.SERVER_MODE == "dev":
+        response = requests.get("http://ngrok:4040/api/tunnels").json()
+        _, http = response["tunnels"]
+        ngrok_domain = http["public_url"]
+        LOGGER.debug("NGROK forwarding collector domain to: %s", ngrok_domain)
+        config.COLLECTOR_HOST = ngrok_domain
+
     setattr(app, "config", config)
     LOGGER.debug("Application config has successfully set up.")
 
@@ -44,7 +52,16 @@ def init_app():
     """Prepare aiohttp web server for further running."""
     app = Application()
 
-    db.init_app(app, {"dsn": config.POSTGRES_DSN})
+    db.init_app(
+        app,
+        dict(
+            dsn=config.POSTGRES_DSN,
+            min_size=config.POSTGRES_POOL_MIN_SIZE,
+            max_size=config.POSTGRES_RETRY_INTERVAL,
+            retry_limit=config.POSTGRES_RETRY_LIMIT,
+            retry_interval=config.POSTGRES_RETRY_INTERVAL,
+        ),
+    )
 
     aiojobs_setup(app)
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader(config.TEMPLATES_DIR))

@@ -4,9 +4,11 @@ import uuid
 from http import HTTPStatus
 
 from aiohttp import web
+from aiojobs.aiohttp import spawn
 
 from app.models.user import User
 from app.utils.errors import SWSDatabaseError
+from app.utils.monobank import setup_webhook, save_user_monobank_info, save_monobank_month_transactions
 
 
 user_routes = web.RouteTableDef()
@@ -33,7 +35,7 @@ class UserView(web.View):
 
 
 @user_routes.view("/user/telegram")
-class UserView(web.View):
+class UserTelegramView(web.View):
     """Class that includes functionality to work with user telegram chat."""
 
     async def get(self):
@@ -49,4 +51,49 @@ class UserView(web.View):
         return web.json_response(
             data={"success": True, "invitation_link": telegram_invitation_link},
             status=HTTPStatus.OK
+        )
+
+
+@user_routes.view("/user/monobank")
+class UserMonobankView(web.View):
+    """Class that includes functionality to work with monobank token."""
+
+    async def put(self):
+        """Update user`s monobank access token."""
+        body = self.request.body
+        config = self.request.app.config
+        user_id = self.request.user_id
+
+        try:
+            user_monobank_token = body["token"]
+        except KeyError:
+            return web.json_response(
+                data={
+                    "success": False,
+                    "message": "Wrong input. Required field token is not provided."
+                },
+                status=HTTPStatus.BAD_REQUEST
+            )
+
+        _, status = await setup_webhook(
+            user_id,
+            user_monobank_token,
+            config.COLLECTOR_WEBHOOK_SECRET,
+            config.COLLECTOR_HOST
+        )
+        if status != 200:
+            return web.json_response(
+                data={"success": False, "message": "Wrong input. Required field token is not correct."},
+                status=400
+            )
+
+        await spawn(self.request, save_user_monobank_info(user_id, user_monobank_token))
+        await spawn(self.request, save_monobank_month_transactions(user_id, user_monobank_token))
+
+        return web.json_response(
+            data={
+                "success": True,
+                "message": "The monobank token was applied successfully."
+            },
+            status=200
         )
