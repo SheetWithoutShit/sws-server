@@ -13,7 +13,6 @@ from app.utils.validators import validate_email, validate_password
 from app.utils.jwt import generate_token, decode_token
 from app.utils.errors import SWSTokenError
 from app.utils.mail import send_reset_password_mail
-from app.config import RESET_PASSWORD_EXPIRE, RESET_PASSWORD_TEMPLATE
 
 
 auth_routes = web.RouteTableDef()
@@ -69,6 +68,8 @@ class AuthSignIn(web.View):
     async def post(self):
         """Login a user if the supplied credentials are correct."""
         body = self.request.body
+        config = self.request.app.config
+
         try:
             email, password = body["email"], body["password"]
         except KeyError:
@@ -98,16 +99,15 @@ class AuthSignIn(web.View):
                 status=HTTPStatus.UNAUTHORIZED
             )
 
-        secret = self.request.app.config.SERVER_SECRET
         token, token_exp = generate_token(
-            secret_key=secret,
+            secret_key=config.SERVER_SECRET,
             private_claims={"user_id": user.id},
-            exp_days=self.request.app.config.ACCESS_JWT_EXP_DAYS
+            exp_days=config.ACCESS_JWT_EXP_DAYS
         )
         refresh_token, refresh_token_exp = generate_token(
-            secret_key=secret,
+            secret_key=config.SERVER_SECRET,
             private_claims={"user_id": user.id},
-            exp_days=self.request.app.config.REFRESH_JWT_EXP_DAYS
+            exp_days=config.REFRESH_JWT_EXP_DAYS
         )
         return web.json_response(
             data={
@@ -126,6 +126,8 @@ class AuthRefreshAccess(web.View):
     async def post(self):
         """Return refreshed access token for a user."""
         body = self.request.body
+        config = self.request.app.config
+
         try:
             refresh_token = body["refresh_access_token"]
         except KeyError:
@@ -137,9 +139,8 @@ class AuthRefreshAccess(web.View):
                 status=HTTPStatus.BAD_REQUEST
             )
 
-        secret_key = self.request.app.config.SERVER_SECRET
         try:
-            payload = decode_token(refresh_token, secret_key)
+            payload = decode_token(refresh_token, config.SERVER_SECRET)
         except SWSTokenError as err:
             return web.json_response(
                 data={"success": False, "message": f"Wrong refresh access token. {str(err)}"},
@@ -148,14 +149,14 @@ class AuthRefreshAccess(web.View):
 
         user_id = payload["user_id"]
         token, token_exp = generate_token(
-            secret_key=secret_key,
+            secret_key=config.SERVER_SECRET,
             private_claims={"user_id": user_id},
-            exp_days=self.request.app.config.ACCESS_JWT_EXP_DAYS
+            exp_days=config.ACCESS_JWT_EXP_DAYS
         )
         refresh_token, refresh_token_exp = generate_token(
-            secret_key=secret_key,
+            secret_key=config.SERVER_SECRET,
             private_claims={"user_id": user_id},
-            exp_days=self.request.app.config.REFRESH_JWT_EXP_DAYS
+            exp_days=config.REFRESH_JWT_EXP_DAYS
         )
         return web.json_response(
             data={
@@ -252,6 +253,7 @@ class AuthResetPasswordView(web.View):
         """Kick off user password resetting."""
         body = self.request.body
         redis = self.request.app["redis"]
+        config = self.request.app.config
 
         try:
             email = body["email"]
@@ -273,8 +275,8 @@ class AuthResetPasswordView(web.View):
             )
 
         reset_password_code = str(uuid.uuid4())
-        reset_password_key = RESET_PASSWORD_TEMPLATE.format(code=reset_password_code)
-        await redis.set(reset_password_key, user.id, RESET_PASSWORD_EXPIRE)
+        reset_password_key = config.RESET_PASSWORD_TEMPLATE.format(code=reset_password_code)
+        await redis.set(reset_password_key, user.id, config.RESET_PASSWORD_EXPIRE)
 
         reset_password_url = self.request.url.update_query({"reset_password_code": reset_password_code})
         await spawn(self.request, send_reset_password_mail(user, str(reset_password_url)))
@@ -291,6 +293,7 @@ class AuthResetPasswordView(web.View):
         """Create a new password for user."""
         body = self.request.body
         redis = self.request.app["redis"]
+        config = self.request.app.config
 
         try:
             new_password = body["new_password"]
@@ -304,7 +307,7 @@ class AuthResetPasswordView(web.View):
                 status=HTTPStatus.BAD_REQUEST
             )
 
-        reset_password_key = RESET_PASSWORD_TEMPLATE.format(code=reset_password_code)
+        reset_password_key = config.RESET_PASSWORD_TEMPLATE.format(code=reset_password_code)
         user_id = await redis.get(reset_password_key)
         if user_id is None:
             return web.json_response(
