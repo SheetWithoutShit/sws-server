@@ -7,6 +7,7 @@ from aiohttp import web
 from aiojobs.aiohttp import spawn
 
 from app.models.user import User
+from app.utils.response import make_response
 from app.utils.errors import SWSDatabaseError
 from app.utils.monobank import setup_webhook, save_user_monobank_info, save_monobank_month_transactions
 
@@ -23,14 +24,16 @@ class UserView(web.View):
         try:
             user = await User.get_by_id(self.request.user_id)
         except SWSDatabaseError as err:
-            return web.json_response(
-                data={"success": False, "message": str(err)},
-                status=HTTPStatus.BAD_REQUEST
+            return make_response(
+                success=False,
+                message=str(err),
+                http_status=HTTPStatus.BAD_REQUEST
             )
 
-        return web.json_response(
-            data={"success": True, "user": user.as_dict()},
-            status=HTTPStatus.OK
+        return make_response(
+            success=True,
+            data=user.as_dict(),
+            http_status=HTTPStatus.OK,
         )
 
 
@@ -48,9 +51,12 @@ class UserTelegramView(web.View):
         await redis.set(telegram_cache_key, self.request.user_id, config.TELEGRAM_EXPIRE)
 
         telegram_invitation_link = config.TELEGRAM_BOT_INVITATION_LINK.format(code=telegram_cache_code)
-        return web.json_response(
-            data={"success": True, "invitation_link": telegram_invitation_link},
-            status=HTTPStatus.OK
+        response_data = {"invitation_link": telegram_invitation_link}
+        return make_response(
+            success=True,
+            message="The invitation link to telegram bot was created successfully.",
+            data=response_data,
+            http_status=HTTPStatus.OK,
         )
 
 
@@ -67,12 +73,10 @@ class UserMonobankView(web.View):
         try:
             user_monobank_token = body["token"]
         except KeyError:
-            return web.json_response(
-                data={
-                    "success": False,
-                    "message": "Wrong input. Required field token is not provided."
-                },
-                status=HTTPStatus.BAD_REQUEST
+            return make_response(
+                success=False,
+                message="Wrong input. Required field token is not provided.",
+                http_status=HTTPStatus.BAD_REQUEST
             )
 
         _, status = await setup_webhook(
@@ -82,18 +86,17 @@ class UserMonobankView(web.View):
             config.COLLECTOR_HOST
         )
         if status != 200:
-            return web.json_response(
-                data={"success": False, "message": "Wrong input. Required field token is not correct."},
-                status=400
+            return make_response(
+                success=False,
+                message="Wrong input. Required field token is not correct.",
+                http_status=HTTPStatus.BAD_REQUEST
             )
 
         await spawn(self.request, save_user_monobank_info(user_id, user_monobank_token))
         await spawn(self.request, save_monobank_month_transactions(user_id, user_monobank_token))
 
-        return web.json_response(
-            data={
-                "success": True,
-                "message": "The monobank token was applied successfully."
-            },
-            status=200
+        return make_response(
+            success=True,
+            message="The monobank token was applied successfully.",
+            http_status=HTTPStatus.OK,
         )
