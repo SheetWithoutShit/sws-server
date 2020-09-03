@@ -88,4 +88,3 @@ async def save_monobank_month_transactions(user_id, user_monobank_token):
     transactions = [prepare_transaction(t) for t in data]
 
     await Transaction.create_bulk_transactions(transactions)
-

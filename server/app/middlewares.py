@@ -5,6 +5,7 @@ from http import HTTPStatus
 
 from aiohttp import web
 
+from app.utils.response import make_response
 from app.utils.errors import SWSTokenError
 from app.utils.jwt import decode_token
 
@@ -44,9 +45,10 @@ async def auth_middleware(request, handler):
 
     token = request.headers.get("Authorization")
     if not token:
-        return web.json_response(
-            data={"success": False, "message": "You aren't authorized. Please provide authorization token."},
-            status=HTTPStatus.UNAUTHORIZED
+        return make_response(
+            success=False,
+            message="You aren't authorized. Please provide authorization token.",
+            http_status=HTTPStatus.UNAUTHORIZED
         )
 
     secret_key = request.app.config.JWT_SECRET_KEY
@@ -54,9 +56,10 @@ async def auth_middleware(request, handler):
     try:
         payload = decode_token(token, secret_key)
     except SWSTokenError as err:
-        return web.json_response(
-            data={"success": False, "message": f"Wrong credentials. {str(err)}"},
-            status=HTTPStatus.UNAUTHORIZED
+        return make_response(
+            success=False,
+            message=f"Wrong credentials. {str(err)}",
+            http_status=HTTPStatus.UNAUTHORIZED
         )
 
     request.user_id = payload["user_id"]
@@ -71,9 +74,10 @@ async def body_validator_middleware(request, handler):
         try:
             request.body = json.loads(content)
         except json.decoder.JSONDecodeError:
-            return web.json_response(
-                data={"success": False, "message": "Wrong input. Can't deserialize body input."},
-                status=HTTPStatus.BAD_REQUEST
+            return make_response(
+                success=False,
+                message="Wrong input. Can't deserialize body input.",
+                http_status=HTTPStatus.BAD_REQUEST
             )
 
     return await handler(request)
