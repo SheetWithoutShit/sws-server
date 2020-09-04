@@ -7,6 +7,13 @@ from aiohttp import web
 from aiojobs.aiohttp import spawn
 from aiohttp_jinja2 import render_template
 
+from app.cache import (
+    cache,
+    RESET_PASSWORD_CACHE_KEY,
+    RESET_PASSWORD_CACHE_EXPIRE,
+    CHANGE_EMAIL_CACHE_KEY,
+    CHANGE_EMAIL_CACHE_EXPIRE
+)
 from app.models.user import User
 from app.utils.response import make_response
 from app.utils.errors import SWSDatabaseError
@@ -255,8 +262,6 @@ class AuthResetPasswordView(web.View):
     async def post(self):
         """Kick off user password resetting."""
         body = self.request.body
-        redis = self.request.app["redis"]
-        config = self.request.app.config
 
         try:
             email = body["email"]
@@ -277,8 +282,8 @@ class AuthResetPasswordView(web.View):
             )
 
         reset_password_code = str(uuid.uuid4())
-        reset_password_key = config.RESET_PASSWORD_CACHE_TEMPLATE.format(code=reset_password_code)
-        await redis.set(reset_password_key, user.id, config.RESET_PASSWORD_CACHE_EXPIRE)
+        reset_password_key = RESET_PASSWORD_CACHE_KEY.format(code=reset_password_code)
+        await cache.set(reset_password_key, user.id, RESET_PASSWORD_CACHE_EXPIRE)
 
         reset_password_url = self.request.url.update_query({"reset_password_code": reset_password_code})
         await spawn(self.request, send_reset_password_mail(user, str(reset_password_url)))
@@ -292,8 +297,6 @@ class AuthResetPasswordView(web.View):
     async def put(self):
         """Create a new password for user."""
         body = self.request.body
-        redis = self.request.app["redis"]
-        config = self.request.app.config
 
         try:
             new_password = body["new_password"]
@@ -305,8 +308,8 @@ class AuthResetPasswordView(web.View):
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
-        reset_password_key = config.RESET_PASSWORD_CACHE_TEMPLATE.format(code=reset_password_code)
-        user_id = await redis.get(reset_password_key)
+        reset_password_key = RESET_PASSWORD_CACHE_KEY.format(code=reset_password_code)
+        user_id = await cache.get(reset_password_key)
         if user_id is None:
             return make_response(
                 success=False,
@@ -332,7 +335,7 @@ class AuthResetPasswordView(web.View):
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
-        await spawn(self.request, redis.remove(reset_password_key))
+        await spawn(self.request, cache.delete(reset_password_key))
 
         return make_response(
             success=True,
@@ -348,8 +351,6 @@ class AuthChangeEmailView(web.View):
     async def post(self):
         """Send email changing confirmation to old user email."""
         body = self.request.body
-        redis = self.request.app["redis"]
-        config = self.request.app.config
         user_id = self.request.user_id
 
         try:
@@ -378,10 +379,17 @@ class AuthChangeEmailView(web.View):
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
+        if user.email == new_email:
+            return make_response(
+                success=False,
+                message="Wrong input. New email cannot be the same as your old email",
+                http_status=HTTPStatus.BAD_REQUEST
+            )
+
         change_email_code = str(uuid.uuid4())
-        change_email_key = config.CHANGE_EMAIL_CACHE_TEMPLATE.format(code=change_email_code)
+        change_email_key = CHANGE_EMAIL_CACHE_KEY.format(code=change_email_code)
         change_email_cache_data = {"user_id": user_id, "new_email": new_email}
-        await redis.dump(change_email_key, change_email_cache_data, config.CHANGE_EMAIL_CACHE_EXPIRE)
+        await cache.set(change_email_key, change_email_cache_data, CHANGE_EMAIL_CACHE_EXPIRE)
 
         change_email_url = f"{self.request.url}/confirm?change_email_code={change_email_code}"
         await spawn(self.request, send_change_email_mail(user, new_email, str(change_email_url)))
@@ -400,9 +408,6 @@ class AuthChangeEmailConfirmView(web.View):
     async def get(self):
         """Return confirm response of user email changing."""
         # TODO: return errors as html too
-        redis = self.request.app["redis"]
-        config = self.request.app.config
-
         try:
             change_email_code = self.request.query["change_email_code"]
         except KeyError:
@@ -412,8 +417,8 @@ class AuthChangeEmailConfirmView(web.View):
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
-        change_email_key = config.CHANGE_EMAIL_CACHE_TEMPLATE.format(code=change_email_code)
-        change_email_cache_data = await redis.get(change_email_key, deserialize=True)
+        change_email_key = CHANGE_EMAIL_CACHE_KEY.format(code=change_email_code)
+        change_email_cache_data = await cache.get(change_email_key)
         if not change_email_cache_data:
             return make_response(
                 success=False,

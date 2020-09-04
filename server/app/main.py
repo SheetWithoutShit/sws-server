@@ -8,8 +8,6 @@ import requests
 from aiohttp.web import Application
 from aiojobs.aiohttp import setup as aiojobs_setup
 
-from core.database.redis import PoolManager as RedisPoolManager
-
 from app import config
 from app.db import db
 from app.middlewares import auth_middleware, body_validator_middleware, error_middleware
@@ -37,17 +35,6 @@ async def init_config(app):
     LOGGER.debug("Application config has successfully set up.")
 
 
-async def init_clients(app):
-    """Initialize aiohttp application with clients."""
-    app["redis"] = redis = await RedisPoolManager.create()
-    LOGGER.debug("Clients has successfully initialized.")
-
-    yield
-
-    await redis.close()
-    LOGGER.debug("Clients has successfully closed.")
-
-
 def init_app():
     """Prepare aiohttp web server for further running."""
     app = Application()
@@ -57,7 +44,7 @@ def init_app():
         dict(
             dsn=config.POSTGRES_DSN,
             min_size=config.POSTGRES_POOL_MIN_SIZE,
-            max_size=config.POSTGRES_RETRY_INTERVAL,
+            max_size=config.POSTGRES_POOL_MAX_SIZE,
             retry_limit=config.POSTGRES_RETRY_LIMIT,
             retry_interval=config.POSTGRES_RETRY_INTERVAL,
         ),
@@ -73,7 +60,6 @@ def init_app():
     app.add_routes(user_routes)
 
     app.on_startup.append(init_config)
-    app.cleanup_ctx.append(init_clients)
 
     app.middlewares.append(db)
     app.middlewares.append(body_validator_middleware)
