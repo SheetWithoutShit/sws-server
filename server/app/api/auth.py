@@ -13,7 +13,7 @@ from app.utils.errors import SWSDatabaseError
 from app.utils.validators import validate_email, validate_password
 from app.utils.jwt import generate_token, decode_token
 from app.utils.errors import SWSTokenError
-from app.utils.mail import send_reset_password_mail, send_change_email_mail
+from app.utils.mail import send_reset_password_mail, send_change_email_mail, send_user_signup_mail
 
 
 auth_routes = web.RouteTableDef()
@@ -52,6 +52,8 @@ class AuthSignUp(web.View):
                 message=str(err),
                 http_status=HTTPStatus.BAD_REQUEST
             )
+
+        await spawn(self.request, send_user_signup_mail(user.email))
 
         response_data = {"id": user.id, "email": user.email}
         return make_response(
