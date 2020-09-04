@@ -67,9 +67,10 @@ async def save_monobank_month_transactions(user_id, user_monobank_token):
         return
 
     try:
-        mccs = [mcc.code for mcc in await MCC.get_all()]
+        mccs = await MCC.get_codes()
     except SWSDatabaseError:
-        mccs = []
+        # TODO: raise retry
+        return
 
     def prepare_transaction(transaction):
         """Return formatted transaction."""

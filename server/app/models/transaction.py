@@ -1,6 +1,5 @@
 """This module provides functionality to interact with transactions in database."""
 
-import asyncio
 import logging
 
 from asyncpg import exceptions
@@ -46,12 +45,11 @@ class Transaction(db.Model, BaseModelMixin):
     @classmethod
     async def create_bulk_transactions(cls, transactions):
         """Bulk create transactions."""
-        try:
-            transactions = await asyncio.gather(*[cls.create_transaction(t) for t in transactions])
-        except SWSDatabaseError:
-            return []
-
-        return transactions
+        for transaction in transactions:
+            try:
+                await cls.create_transaction(transaction)
+            except SWSDatabaseError:
+                continue
 
     @classmethod
     async def get_transactions(cls, user_id, start_date, end_date):
