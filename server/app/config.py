@@ -44,8 +44,10 @@ POSTGRES_DSN = URL(
 )
 
 # Cache stuff
-RESET_PASSWORD_EXPIRE = 60 * 60 * 24  # 24h
-RESET_PASSWORD_TEMPLATE = "reset-password--{code}"
+CHANGE_EMAIL_CACHE_EXPIRE = 60 * 60 * 24  # 48h
+CHANGE_EMAIL_CACHE_TEMPLATE = "change-email--{code}"
+RESET_PASSWORD_CACHE_EXPIRE = 60 * 60 * 24  # 24h
+RESET_PASSWORD_CACHE_TEMPLATE = "reset-password--{code}"
 TELEGRAM_TEMPLATE = "telegram--{code}"
 TELEGRAM_EXPIRE = 60 * 60  # 1h
 

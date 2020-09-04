@@ -15,7 +15,8 @@ SAFE_ROUTES = (
     "/auth/signup",
     "/auth/signin",
     "/auth/refresh_access",
-    "/auth/reset_password"
+    "/auth/reset_password",
+    "/auth/change_email/confirm"
 )
 
 
