@@ -37,14 +37,14 @@
     <body>
         <div class="email">
             <h1 class="email-header">SheetWithoutShit</h1><hr>
-            <h1>Hi, {username}.</h1>
-            <p>We would like to confirm that you prefer using <span>{new_email}</span> as your email.</p>
+            <h1>Hi, {{username}}.</h1>
+            <p>We would like to confirm that you prefer using <span>{{new_email}}</span> as your email.</p>
             <p>In case you don't want to change your current email - ignore this message.</p>
             <p>In order to confirm the email changing, you need to click the button below.<p/>
             <p>Note that this link is valid for 48 hours.</p>
             <p>After the time limit has expired, you will have to resubmit the request for an email changing.</p>
             <button id="change-email-button">
-                <a href={change_email_url}>Confirm</a>
+                <a href={{change_email_url}}>Confirm</a>
             </button>
         </div>
     </body>

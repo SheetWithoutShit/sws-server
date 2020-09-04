@@ -9,6 +9,7 @@ from sqlalchemy.engine.url import URL
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.abspath(os.path.join(APP_DIR, os.pardir))
 TEMPLATES_DIR = os.path.join(APP_DIR, "templates")
+EMAILS_DIR = os.path.join(TEMPLATES_DIR, "emails")
 SERVER_MODE = os.getenv("SERVER_MODE", "dev")
 COLLECTOR_HOST = os.getenv("COLLECTOR_HOST")
 COLLECTOR_WEBHOOK_SECRET = os.getenv("MONOBANK_WEBHOOK_SECRET")
