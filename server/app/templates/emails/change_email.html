@@ -1,0 +1,51 @@
+<html>
+    <head>
+        <style>
+            body {
+                background: linear-gradient(162.44deg, #EAF3E8 0%, #B8D8D1 100%);
+                display: flex;
+                justify-content: center;
+            }
+            .email {
+                background-color: white;
+                min-width: 300px;
+                height: 450px;
+                padding: 10px 40px;
+            }
+            .email-header {
+                color: #209F85;
+            }
+            hr {
+                border: 0.3px solid lightgray;  
+            }
+            span {
+                font-weight: bold;
+            }
+            #change-email-button {
+                background-color: #209F85; 
+                width: 250px; 
+                padding: 15px;
+                border: 0;
+            }
+            #change-email-button > a {
+                color: white; 
+                font-size: 18px; 
+                text-decoration: none;
+            }
+        </style> 
+    </head>
+    <body>
+        <div class="email">
+            <h1 class="email-header">SheetWithoutShit</h1><hr>
+            <h1>Hi, {username}.</h1>
+            <p>We would like to confirm that you prefer using <span>{new_email}</span> as your email.</p>
+            <p>In case you don't want to change your current email - ignore this message.</p>
+            <p>In order to confirm the email changing, you need to click the button below.<p/>
+            <p>Note that this link is valid for 48 hours.</p>
+            <p>After the time limit has expired, you will have to resubmit the request for an email changing.</p>
+            <button id="change-email-button">
+                <a href={change_email_url}>Confirm</a>
+            </button>
+        </div>
+    </body>
+</html>
