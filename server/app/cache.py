@@ -2,6 +2,8 @@
 
 from aiocache import Cache
 
+MONTH_REPORT_CACHE_KEY = "month-report--{user_id}-{month}-{year}"
+MONTH_REPORT_CACHE_EXPIRE = 60 * 60 * 24 * 30  # 30 days
 MCC_CODES_CACHE_KEY = "mcc-codes"
 CHANGE_EMAIL_CACHE_KEY = "change-email--{code}"
 CHANGE_EMAIL_CACHE_EXPIRE = 60 * 60 * 24  # 48h
