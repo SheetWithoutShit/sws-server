@@ -71,7 +71,7 @@ class TransactionMonthReportView(web.View):
             )
 
         try:
-            result = await Transaction.get_month_report(self.request.user_id, year, month)
+            reports = await Transaction.get_month_report(self.request.user_id, year, month)
         except SWSDatabaseError as err:
             return make_response(
                 success=False,
@@ -80,7 +80,7 @@ class TransactionMonthReportView(web.View):
             )
 
         response_data = {
-            "report": [dict(item) for item in result],
+            "reports": reports,
             "year": year,
             "month": month
         }

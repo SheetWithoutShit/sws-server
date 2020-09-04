@@ -1,6 +1,7 @@
 """This module provides functionality to interact with transactions in database."""
 
 import logging
+from datetime import datetime
 
 from asyncpg import exceptions
 from sqlalchemy import between, extract, func, cast
@@ -9,6 +10,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.db import db
 from app.models import BaseModelMixin
 from app.models.mcc import MCC
+from app.cache import cache, MONTH_REPORT_CACHE_EXPIRE, MONTH_REPORT_CACHE_KEY
 from app.utils.errors import SWSDatabaseError
 
 
@@ -67,7 +69,7 @@ class Transaction(db.Model, BaseModelMixin):
         return transactions
 
     @classmethod
-    async def get_month_report(cls, user_id, year, month):
+    async def _get_month_report(cls, user_id, year, month):
         """Retrieve transaction report for specific month."""
         try:
             reports = await db \
@@ -89,6 +91,25 @@ class Transaction(db.Model, BaseModelMixin):
         except SQLAlchemyError as err:
             LOGGER.error("Couldn't retrieve month transaction report for user=%s. Error: %s", user_id, err)
             raise SWSDatabaseError(f"Failed to retrieve month ({month}.{year}) report for user id {user_id}")
+
+        return [dict(item) for item in reports]
+
+    @classmethod
+    async def get_month_report(cls, user_id, year, month):
+        """Retrieve transaction from cache if not current month else from database."""
+        today = datetime.today()
+        current_month = today.year == year and today.month == month
+
+        # is not sense to cache for current month
+        if current_month:
+            return await cls._get_month_report(user_id, year, month)
+
+        month_report_cache_key = MONTH_REPORT_CACHE_KEY.format(user_id=user_id, year=year, month=month)
+        reports = await cache.get(month_report_cache_key)
+        if not reports:
+            reports = await cls._get_month_report(user_id, year, month)
+            if not current_month and reports:
+                await cache.set(month_report_cache_key, reports, MONTH_REPORT_CACHE_EXPIRE)
 
         return reports
 
