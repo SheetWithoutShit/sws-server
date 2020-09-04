@@ -4,60 +4,27 @@ import logging
 from email.message import EmailMessage
 
 import aiosmtplib
+from jinja2 import Template
 
-from app.config import SMTP_HOST, SMTP_LOGIN, SMTP_PASSWORD
+from app.config import SMTP_HOST, SMTP_LOGIN, SMTP_PASSWORD, EMAILS_DIR
 
 
 LOGGER = logging.getLogger(__name__)
 
 MAIL_SUBJECT = "Sheet Without Shit. {subject}"
 RESET_PASSWORD_SUBJECT = "Reset Password"
+RESET_PASSWORD_TEMPLATE = "reset_password.html"
 CHANGE_EMAIL_SUBJECT = "Confirmation of Email changing"
+CHANGE_EMAIL_TEMPLATE = "change_email.html"
 USER_SIGNUP_SUBJECT = "Welcome aboard"
-RESET_PASSWORD_MAIL = """
-    <html>
-    <head></head>
-    <body style="color: #209F85">
-        <h1>Hi, {username}.</h1>
-        <p>A password reset for your account was requested.</p>
-        <p>Please click the button below to change your password.</p>
-        <p>Note that this link is valid for 24 hours.</p>
-        <p>After the time limit has expired, you will have to resubmit the request for a password reset.</p>
-        <button style="color: #209F85" id="change-password-button">
-            <a style="color: #209F85" href={reset_password_url}>Change Your Password</a>
-        </button>
-    </body>
-    </html>
-"""
-CHANGE_EMAIL_MAIL = """
-    <html>
-    <head></head>
-    <body style="color: #209F85">
-        <h1>Hi, {username}.</h1>
-        <p>We would like to confirm that you prefer using {new_email} as your email.</p>
-        <p>In case you don't want to change your current email - ignore this message.</p>
-        <p>In order to confirm the email changing, you need to click the button below.<p/>
-        <p>Note that this link is valid for 48 hours.</p>
-        <p>After the time limit has expired, you will have to resubmit the request for an email changing.</p>
-        <button style="color: #209F85" id="change-email-button">
-            <a style="color: #209F85" href={change_email_url}>Confirm</a>
-        </button>
-    </body>
-    </html>
-"""
-USER_SIGNUP_MAIL = """
-    <html>
-    <head></head>
-    <body style="color: #209F85">
-        <p>Congratulations!</p>
-        <p>You have successfully signed up.</p>
-        <p>We are happy to see you as a member of SheetWithoutShit application.</p>
-        <p>Our system will help you to save your costs and control all your transactions.<p/>
-        <p>Also, we have a lot of other interesting features.</p>
-        <p>Do not waste time - let's configure your budget!</p>
-    </body>
-    </html>
-"""
+USER_SIGNUP_TEMPLATE = "user_signup.html"
+
+
+def load_email_html(template_name):
+    """Load html file to string from email dir by template name."""
+    template_path = f"{EMAILS_DIR}/{template_name}"
+    with open(template_path) as file:
+        return Template(file.read())
 
 
 def create_email_message(receiver, subject, html):
@@ -91,7 +58,8 @@ async def send_reset_password_mail(user, reset_password_url):
     """Send reset password email message to user."""
     username = user.first_name if user.first_name else user.email
 
-    html = RESET_PASSWORD_MAIL.format(username=username, reset_password_url=reset_password_url)
+    html_template = load_email_html(RESET_PASSWORD_TEMPLATE)
+    html = html_template.render(reset_password_url=reset_password_url, username=username)
     message = create_email_message(user.email, RESET_PASSWORD_SUBJECT, html)
 
     await send_mail(message)
@@ -101,7 +69,9 @@ async def send_change_email_mail(user, new_email, change_email_url):
     """Send email with confirmation fo email changing to user."""
     username = user.first_name if user.first_name else user.email
 
-    html = CHANGE_EMAIL_MAIL.format(username=username, new_email=new_email, change_email_url=change_email_url)
+    html_template = load_email_html(CHANGE_EMAIL_TEMPLATE)
+    html = html_template.render(username=username, new_email=new_email, change_email_url=change_email_url)
+
     message = create_email_message(user.email, CHANGE_EMAIL_SUBJECT, html)
 
     await send_mail(message)
@@ -109,6 +79,9 @@ async def send_change_email_mail(user, new_email, change_email_url):
 
 async def send_user_signup_mail(email):
     """Send email to user that have just signed up."""
-    message = create_email_message(email, USER_SIGNUP_SUBJECT, USER_SIGNUP_MAIL)
+    html_template = load_email_html(USER_SIGNUP_TEMPLATE)
+    html = html_template.render()
+
+    message = create_email_message(email, USER_SIGNUP_SUBJECT, html)
 
     await send_mail(message)
