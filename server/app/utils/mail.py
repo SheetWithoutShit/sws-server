@@ -1,5 +1,6 @@
 """This module provides functionality to work with SMTP."""
 
+import logging
 from email.message import EmailMessage
 
 import aiosmtplib
@@ -7,9 +8,12 @@ import aiosmtplib
 from app.config import SMTP_HOST, SMTP_LOGIN, SMTP_PASSWORD
 
 
+LOGGER = logging.getLogger(__name__)
+
 MAIL_SUBJECT = "Sheet Without Shit. {subject}"
 RESET_PASSWORD_SUBJECT = "Reset Password"
 CHANGE_EMAIL_SUBJECT = "Confirmation of Email changing"
+USER_SIGNUP_SUBJECT = "Welcome aboard"
 RESET_PASSWORD_MAIL = """
     <html>
     <head></head>
@@ -41,6 +45,19 @@ CHANGE_EMAIL_MAIL = """
     </body>
     </html>
 """
+USER_SIGNUP_MAIL = """
+    <html>
+    <head></head>
+    <body style="color: #209F85">
+        <p>Congratulations!</p>
+        <p>You have successfully signed up.</p>
+        <p>We are happy to see you as a member of SheetWithoutShit application.</p>
+        <p>Our system will help you to save your costs and control all your transactions.<p/>
+        <p>Also, we have a lot of other interesting features.</p>
+        <p>Do not waste time - let's configure your budget!</p>
+    </body>
+    </html>
+"""
 
 
 def create_email_message(receiver, subject, html):
@@ -64,7 +81,10 @@ async def send_mail(message):
     await smtp.starttls()
     await smtp.login(SMTP_LOGIN, SMTP_PASSWORD)
 
-    await smtp.send_message(message)
+    try:
+        await smtp.send_message(message)
+    except aiosmtplib.errors.SMTPException as err:
+        LOGGER.error("Could not send email to user. Error: %s", str(err))
 
 
 async def send_reset_password_mail(user, reset_password_url):
@@ -83,5 +103,12 @@ async def send_change_email_mail(user, new_email, change_email_url):
 
     html = CHANGE_EMAIL_MAIL.format(username=username, new_email=new_email, change_email_url=change_email_url)
     message = create_email_message(user.email, CHANGE_EMAIL_SUBJECT, html)
+
+    await send_mail(message)
+
+
+async def send_user_signup_mail(email):
+    """Send email to user that have just signed up."""
+    message = create_email_message(email, USER_SIGNUP_SUBJECT, USER_SIGNUP_MAIL)
 
     await send_mail(message)
