@@ -110,3 +110,16 @@ class User(db.Model, BaseModelMixin):
             raise SWSDatabaseError(f"A user with this email does not exist: {email}.")
 
         return user
+
+    @classmethod
+    async def delete(cls, id_):
+        """Delete user instance by provided id."""
+        try:
+            status, _ = await super().delete.where(cls.id == id_).gino.status()
+        except SQLAlchemyError as err:
+            LOGGER.error("Could not delete user by id=%s. Error: %s", id_, err)
+            raise SWSDatabaseError(f"Failed to delete user by id={id_}")
+
+        deleted = parse_status(status)
+        if not deleted:
+            raise SWSDatabaseError("The user was not deleted.")

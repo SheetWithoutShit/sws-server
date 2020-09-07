@@ -37,6 +37,23 @@ class UserView(web.View):
             http_status=HTTPStatus.OK,
         )
 
+    async def delete(self):
+        """Delete user and his data from system."""
+        try:
+            await User.delete(self.request.user_id)
+        except SWSDatabaseError as err:
+            return make_response(
+                success=False,
+                message=str(err),
+                http_status=HTTPStatus.BAD_REQUEST
+            )
+
+        return make_response(
+            success=True,
+            message="The user was deleted successfully.",
+            http_status=HTTPStatus.OK,
+        )
+
 
 @user_routes.view("/user/telegram")
 class UserTelegramView(web.View):

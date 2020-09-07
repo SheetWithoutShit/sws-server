@@ -23,7 +23,7 @@ class Transaction(db.Model, BaseModelMixin):
     __tablename__ = "transaction"
 
     id = db.Column(db.String(255), primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"))
     amount = db.Column(db.Numeric(12, 2), nullable=False)
     balance = db.Column(db.Numeric(12, 2))
     cashback = db.Column(db.Numeric(12, 2), default=0)
@@ -103,7 +103,7 @@ class Transaction(db.Model, BaseModelMixin):
         today = datetime.today()
         current_month = today.year == year and today.month == month
 
-        # is not sense to cache for current month
+        # no sense to cache for current month
         if current_month:
             return await cls._get_month_report(user_id, year, month)
 
