@@ -4,6 +4,7 @@ import logging
 
 import bcrypt
 from asyncpg import exceptions
+from sqlalchemy import func
 from sqlalchemy.orm import relationship
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -28,6 +29,7 @@ class User(db.Model, BaseModelMixin):
     telegram_id = db.Column(db.Integer)
     notifications_enabled = db.Column(db.Boolean, nullable=False, default=False)
     monobank_token = db.Column(db.String(255), nullable=False, default="")
+    created = db.Column(db.DateTime, nullable=False, default=func.now())
 
     budget = relationship("budget", uselist=False, back_populates="user")
     transactions = relationship("transaction", back_populates="user")

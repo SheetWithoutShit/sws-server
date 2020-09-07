@@ -1,8 +1,8 @@
 """Initialization
 
-Revision ID: e1b7cb23cbf6
+Revision ID: 467dcbe7031c
 Revises: 
-Create Date: 2020-09-07 08:23:21.148114
+Create Date: 2020-09-07 13:27:32.259223
 
 """
 from alembic import op
@@ -12,11 +12,10 @@ from migrations.data import insert_mcc_data
 
 
 # revision identifiers, used by Alembic.
-revision = 'e1b7cb23cbf6'
+revision = '467dcbe7031c'
 down_revision = None
 branch_labels = None
 depends_on = None
-
 
 create_budget_trigger = """
     CREATE OR REPLACE FUNCTION create_budget() RETURNS TRIGGER AS
@@ -58,6 +57,7 @@ def upgrade():
     sa.Column('telegram_id', sa.Integer(), nullable=True),
     sa.Column('notifications_enabled', sa.Boolean(), nullable=False),
     sa.Column('monobank_token', sa.String(length=255), nullable=False),
+    sa.Column('created', sa.DateTime(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email')
     )
