@@ -1,7 +1,6 @@
 """This module provides budget views."""
 
 from http import HTTPStatus
-from datetime import datetime
 
 from aiohttp import web
 
@@ -20,19 +19,8 @@ class UserProfileBudgetView(web.View):
 
     async def get(self):
         """Retrieve user`s profile budget information."""
-        today = datetime.today()
         try:
-            year = int(self.request.query.get("year", today.year))
-            month = int(self.request.query.get("month", today.month))
-        except (TypeError, ValueError):
-            return make_response(
-                success=False,
-                message="Wrong input. Query arguments year or month is not correct",
-                http_status=HTTPStatus.BAD_REQUEST
-            )
-
-        try:
-            budget = await Budget.get_budget(self.request.user_id, year, month)
+            budget = await Budget.get_budget(self.request.user_id)
         except SWSDatabaseError as err:
             return make_response(
                 success=False,
@@ -49,14 +37,6 @@ class UserProfileBudgetView(web.View):
     async def put(self):
         """Update user`s profile budget information."""
         body = self.request.body
-        try:
-            year, month = int(body["year"]), int(body["month"])
-        except (KeyError, TypeError, ValueError):
-            return make_response(
-                success=False,
-                message="Wrong input. Required fields year or month is not correct.",
-                http_status=HTTPStatus.BAD_REQUEST
-            )
 
         income, savings = body.get("income"), body.get("savings")
         validation_errors = validate_budget_income(income) + validate_budget_savings(savings)
@@ -68,7 +48,7 @@ class UserProfileBudgetView(web.View):
             )
 
         try:
-            await Budget.update_budget(self.request.user_id, year, month, savings, income)
+            await Budget.update_budget(self.request.user_id, savings, income)
         except SWSDatabaseError as err:
             return make_response(
                 success=False,

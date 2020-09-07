@@ -7,7 +7,6 @@ from datetime import datetime, timedelta
 
 import gino
 
-from data.mcc import INSERT_MCCS
 from app.config import POSTGRES_DSN
 from app.models.user import User
 
@@ -18,8 +17,6 @@ MCC_IDS = [-1, 2741, 7829, 5811, 4121, 5451, 5172, 5697, 5733]
 USER_EMAIL = "test@example.com"
 USER_PASSWORD = User.generate_password_hash("Test1234!")
 USER_ID = 1234567890
-USER_BALANCE = 10000.00
-USER_SAVING = 25.00
 
 CREATE_USER_QUERY = f"""
     INSERT INTO "user" (id, email, password, first_name, last_name, notifications_enabled, monobank_token) 
@@ -29,10 +26,6 @@ CREATE_TRANSACTION_QUERY = """
     INSERT INTO transaction (id, user_id, amount, balance, cashback, mcc, timestamp, info)
     VALUES (:id, :user_id, :amount, :balance, :cashback, :mcc, :timestamp, 'testtransaction')
 """
-CREATE_BUDGET_QUERY = """
-    INSERT INTO budget (income, savings, year, month, user_id) 
-    VALUES (:income, :savings, :year, :month, :user_id)
-"""
 
 
 async def _get_db_connection():
@@ -40,36 +33,14 @@ async def _get_db_connection():
     return await gino.Gino(POSTGRES_DSN)
 
 
-async def _create_user_budgets():
-    """Return query for creating user budgets."""
-    today = datetime.today()
-    return CREATE_BUDGET_QUERY.format(
-        income=10000.00,
-        savings=25.00,
-        year=today.year,
-        month=today.month,
-        user_id=USER_ID
-    )
-
-
 async def seed_dev_db():
     """Executes operations in order to seed dev database."""
     conn = await _get_db_connection()
     today = datetime.today()
 
-    await conn.status(conn.text(INSERT_MCCS))
     await conn.status(conn.text(CREATE_USER_QUERY))
 
-    await conn.status(
-        conn.text(CREATE_BUDGET_QUERY),
-        income=USER_BALANCE,
-        savings=USER_SAVING,
-        year=today.year,
-        month=today.month,
-        user_id=USER_ID
-    )
-
-    balance = USER_BALANCE
+    balance = 0
     for i in range(500):
         mcc = random.choice(MCC_IDS)
         timestamp = today - timedelta(hours=i * 3)
@@ -91,8 +62,6 @@ async def seed_dev_db():
 
 async def seed_prod_db():
     """Executes operations in order to seed prod database."""
-    conn = await _get_db_connection()
-    await conn.status(conn.text(INSERT_MCCS))
 
 
 if __name__ == "__main__":
