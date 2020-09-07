@@ -8,8 +8,9 @@ import aiohttp
 from app.models.mcc import MCC
 from app.models.user import User
 from app.models.transaction import Transaction
+from app.utils.misc import retry
 from app.utils.jwt import generate_token
-from app.utils.errors import SWSDatabaseError
+from app.utils.errors import SWSDatabaseError, SWSRetryError
 
 
 LOGGER = logging.getLogger(__name__)
@@ -31,6 +32,7 @@ async def setup_webhook(user_id, user_monobank_token, collector_secret, collecto
             return await response.json(), response.status
 
 
+@retry(times=3)
 async def save_user_monobank_info(user_id, user_monobank_token):
     """Retrieve user's data by his token from monobank API."""
     headers = {"X-Token": user_monobank_token}
@@ -40,16 +42,17 @@ async def save_user_monobank_info(user_id, user_monobank_token):
 
     if status != 200:
         LOGGER.error("Couldn't retrieve user`s=%s data from monobank. Error: %s", user_id, response)
-        return
+        raise SWSRetryError
 
     last_name, first_name = data.get("name", "").split(" ")
     try:
         await User.update_user(user_id, first_name=first_name, last_name=last_name, monobank_token=user_monobank_token)
         LOGGER.info("User=%s was successfully updated from monobank client info.", user_id)
     except SWSDatabaseError:
-        pass
+        raise SWSRetryError
 
 
+@retry(times=3)
 async def save_monobank_month_transactions(user_id, user_monobank_token):
     """
     Retrieve user's transactions by his token from monobank API
@@ -64,13 +67,12 @@ async def save_monobank_month_transactions(user_id, user_monobank_token):
 
     if status != 200:
         LOGGER.error("Couldn't retrieve user`s=%s transactions from monobank. Error: %s", user_id, data)
-        return
+        raise SWSRetryError
 
     try:
         mccs = await MCC.get_codes()
     except SWSDatabaseError:
-        # TODO: raise retry
-        return
+        raise SWSRetryError
 
     def prepare_transaction(transaction):
         """Return formatted transaction."""
