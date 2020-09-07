@@ -1,8 +1,8 @@
 """Initialization
 
-Revision ID: 467dcbe7031c
+Revision ID: 5b4296328741
 Revises: 
-Create Date: 2020-09-07 13:27:32.259223
+Create Date: 2020-09-07 17:58:11.535869
 
 """
 from alembic import op
@@ -12,7 +12,7 @@ from migrations.data import insert_mcc_data
 
 
 # revision identifiers, used by Alembic.
-revision = '467dcbe7031c'
+revision = '5b4296328741'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -66,7 +66,7 @@ def upgrade():
     sa.Column('income', sa.Numeric(precision=12, scale=2), nullable=False),
     sa.Column('savings', sa.SmallInteger(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index('budget_user_idx', 'budget', ['user_id'], unique=False)
@@ -80,7 +80,7 @@ def upgrade():
     sa.Column('timestamp', sa.DateTime(), nullable=False),
     sa.Column('info', sa.String(length=255), nullable=False),
     sa.ForeignKeyConstraint(['mcc'], ['mcc.code'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index('transaction_user_timestamp_idx', 'transaction', ['user_id', 'timestamp'], unique=False)
