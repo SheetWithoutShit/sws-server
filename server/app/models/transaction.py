@@ -5,6 +5,7 @@ from datetime import datetime
 
 from asyncpg import exceptions
 from sqlalchemy import between, extract, func, cast
+from sqlalchemy.orm import relationship
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.db import db
@@ -29,6 +30,8 @@ class Transaction(db.Model, BaseModelMixin):
     mcc = db.Column(db.Integer, db.ForeignKey("mcc.code"))
     timestamp = db.Column(db.DateTime, nullable=False)
     info = db.Column(db.String(255), nullable=False, default="")
+
+    user = relationship("user", back_populates="transactions")
 
     _transaction_user_timestamp_idx = db.Index("transaction_user_timestamp_idx", "user_id", "timestamp")
 

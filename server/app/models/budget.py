@@ -2,6 +2,7 @@
 
 import logging
 
+from sqlalchemy.orm import relationship
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.db import db
@@ -16,43 +17,34 @@ class Budget(db.Model, BaseModelMixin):
     __tablename__ = "budget"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    income = db.Column(db.Numeric(12, 2), default=0.0)
-    savings = db.Column(db.SmallInteger, default=0)
-    year = db.Column(db.SmallInteger, nullable=False)
-    month = db.Column(db.SmallInteger, nullable=False)
+    income = db.Column(db.Numeric(12, 2), nullable=False, default=0.0)
+    savings = db.Column(db.SmallInteger, nullable=False, default=0)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 
-    _budget_user_idx = db.Index("budget_user_idx", "user_id", "month", "year")
+    user = relationship("user", back_populates="budget")
+
+    _budget_user_idx = db.Index("budget_user_idx", "user_id")
 
     @classmethod
-    async def get_budget(cls, user_id, year, month):
+    async def get_budget(cls, user_id):
         """Retrieve queried budget from database by provided user_id."""
         try:
             budget = await cls.query \
-                .where(
-                    (cls.user_id == user_id) &
-                    (cls.year == year) &
-                    (cls.month == month)) \
+                .where(cls.user_id == user_id) \
                 .gino.first()
         except SQLAlchemyError as err:
             LOGGER.error("Couldn't retrieve budget for user=%s. Error: %s", user_id, err)
             raise SWSDatabaseError(f"Failed to retrieve budget for user id {user_id}")
 
-        if not budget:
-            raise SWSDatabaseError(f"A budget for user={user_id} in this period ({month}.{year}) does not exist.")
-
         return budget
 
     @classmethod
-    async def update_budget(cls, user_id, year, month, savings, income):
+    async def update_budget(cls, user_id, savings, income):
         """Update profile budget in database for provided user."""
         try:
             status, _ = await cls.update \
                 .values(savings=savings, income=income)\
-                .where(
-                    (cls.user_id == user_id) &
-                    (cls.year == year) &
-                    (cls.month == month)) \
+                .where(cls.user_id == user_id) \
                 .gino.status()
         except SQLAlchemyError as err:
             LOGGER.error("Couldn't update budget for user=%s. Error: %s", user_id, err)
