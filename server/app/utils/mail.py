@@ -6,6 +6,8 @@ from email.message import EmailMessage
 import aiosmtplib
 from jinja2 import Template
 
+from app.utils.misc import retry
+from app.utils.errors import SWSRetryError
 from app.config import SMTP_HOST, SMTP_LOGIN, SMTP_PASSWORD, EMAILS_DIR
 
 
@@ -40,6 +42,7 @@ def create_email_message(receiver, subject, html):
     return message
 
 
+@retry(times=3)
 async def send_mail(message):
     """Send email message via gmail smtp service."""
     smtp = aiosmtplib.SMTP(hostname=SMTP_HOST, port=587, use_tls=False)
@@ -52,6 +55,7 @@ async def send_mail(message):
         await smtp.send_message(message)
     except aiosmtplib.errors.SMTPException as err:
         LOGGER.error("Could not send email to user. Error: %s", str(err))
+        raise SWSRetryError
 
 
 async def send_reset_password_mail(user, reset_password_url):
