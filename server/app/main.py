@@ -1,5 +1,6 @@
 """This module provides server app initialization."""
 
+import os
 import logging
 
 import jinja2
@@ -20,6 +21,7 @@ from app.api.index import handle_404, handle_405, handle_500
 
 
 LOGGER = logging.getLogger(__name__)
+LOG_FORMAT = "%(asctime)s - %(levelname)s: %(name)s: %(message)s"
 
 
 async def init_config(app):
@@ -35,9 +37,32 @@ async def init_config(app):
     LOGGER.debug("Application config has successfully set up.")
 
 
+def init_logging():
+    """
+    Initialize logging stream with debug level to console and
+    create file logger with error level if permission to file allowed.
+    """
+    logging.basicConfig(format=LOG_FORMAT, level=logging.DEBUG)
+
+    # disabling gino postgres echo logs
+    # in order to set echo pass echo=True to db config dict
+    logging.getLogger("gino.engine._SAEngine").propagate = False
+
+    log_dir = os.environ.get("LOG_DIR")
+    log_filepath = f'{log_dir}/server.log'
+    if log_dir and os.path.isfile(log_filepath) and os.access(log_filepath, os.W_OK):
+        formatter = logging.Formatter(LOG_FORMAT)
+        file_handler = logging.FileHandler(log_filepath)
+        file_handler.setLevel(logging.ERROR)
+        file_handler.setFormatter(formatter)
+        logging.getLogger("").addHandler(file_handler)
+
+
 def init_app():
     """Prepare aiohttp web server for further running."""
     app = Application()
+
+    init_logging()
 
     db.init_app(
         app,
@@ -46,7 +71,7 @@ def init_app():
             min_size=config.POSTGRES_POOL_MIN_SIZE,
             max_size=config.POSTGRES_POOL_MAX_SIZE,
             retry_limit=config.POSTGRES_RETRY_LIMIT,
-            retry_interval=config.POSTGRES_RETRY_INTERVAL,
+            retry_interval=config.POSTGRES_RETRY_INTERVAL
         ),
     )
 
