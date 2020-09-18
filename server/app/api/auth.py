@@ -52,7 +52,7 @@ class AuthSignUp(web.View):
 
         password_hash = User.generate_password_hash(password)
         try:
-            user = await User.create_user(email=email, password=password_hash)
+            user = await User.create(email=email, password=password_hash)
         except SWSDatabaseError as err:
             return make_response(
                 success=False,
@@ -65,7 +65,7 @@ class AuthSignUp(web.View):
         response_data = {"id": user.id, "email": user.email}
         return make_response(
             success=True,
-            message="The user was created successfully.",
+            message="Success. The user was created.",
             data=response_data,
             http_status=HTTPStatus.CREATED,
         )
@@ -102,7 +102,7 @@ class AuthSignIn(web.View):
         if not is_correct:
             return make_response(
                 success=False,
-                message=f"The provided password for user {email} is not correct.",
+                message=f"Wrong input. The provided password for user {email} is not correct.",
                 http_status=HTTPStatus.UNAUTHORIZED
             )
 
@@ -123,7 +123,7 @@ class AuthSignIn(web.View):
         }
         return make_response(
             success=True,
-            message="The user was authorized successfully.",
+            message="Success. The user was authorized.",
             data=response_data,
             http_status=HTTPStatus.OK,
         )
@@ -152,7 +152,7 @@ class AuthRefreshAccess(web.View):
         except SWSTokenError as err:
             return make_response(
                 success=False,
-                message=f"Wrong refresh access token. {str(err)}",
+                message=f"Wrong input. Invalid refresh access token. {str(err)}",
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
@@ -174,7 +174,7 @@ class AuthRefreshAccess(web.View):
         }
         return make_response(
             success=True,
-            message="The access was refreshed successfully.",
+            message="Success. The access token was refreshed.",
             data=response_data,
             http_status=HTTPStatus.OK,
         )
@@ -209,7 +209,7 @@ class AuthChangePasswordView(web.View):
         if not is_correct:
             return make_response(
                 success=False,
-                message="The provided old password is not correct.",
+                message="Wrong input. The provided old password is not correct.",
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
@@ -217,23 +217,23 @@ class AuthChangePasswordView(web.View):
         if validation_errors:
             return make_response(
                 success=False,
-                message=f"Invalid new password: {' '.join(validation_errors)}",
+                message=f"Wrong input. Invalid new password: {' '.join(validation_errors)}",
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
         password_hash = User.generate_password_hash(new_password)
         try:
-            await User.update_user(self.request.user_id, password=password_hash)
+            await User.update(self.request.user_id, password=password_hash)
         except SWSDatabaseError:
             return make_response(
                 success=False,
-                message="Failed to update user password.",
+                message="Failure. The user password was not changed.",
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
         return make_response(
             success=True,
-            message="The password was changed successfully.",
+            message="Success. The user password was changed.",
             http_status=HTTPStatus.OK,
         )
 
@@ -290,7 +290,7 @@ class AuthResetPasswordView(web.View):
 
         return make_response(
             success=True,
-            message=f"The email with link for password resetting should soon be delivered to {user.email}.",
+            message=f"Success. The email with link for password resetting should soon be delivered to {user.email}.",
             http_status=HTTPStatus.OK,
         )
 
@@ -321,17 +321,17 @@ class AuthResetPasswordView(web.View):
         if validation_errors:
             return make_response(
                 success=False,
-                message=f"Invalid new password: {' '.join(validation_errors)}",
+                message=f"Wrong input. Invalid new password: {' '.join(validation_errors)}",
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
         password_hash = User.generate_password_hash(new_password)
         try:
-            await User.update_user(int(user_id), password=password_hash)
+            await User.update(int(user_id), password=password_hash)
         except SWSDatabaseError:
             return make_response(
                 success=False,
-                message="Failed to update user password.",
+                message="Failure. The user password was not changed.",
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
@@ -339,7 +339,7 @@ class AuthResetPasswordView(web.View):
 
         return make_response(
             success=True,
-            message="The password was changed successfully.",
+            message="Success. The user password was changed.",
             http_status=HTTPStatus.OK,
         )
 
@@ -396,7 +396,8 @@ class AuthChangeEmailView(web.View):
 
         return make_response(
             success=True,
-            message=f"The email with link for email changing confirmation should soon be delivered to {user.email}.",
+            message=f"Success. The email with link for email changing confirmation "
+                    f"should soon be delivered to {user.email}.",
             http_status=HTTPStatus.OK,
         )
 
@@ -422,17 +423,17 @@ class AuthChangeEmailConfirmView(web.View):
         if not change_email_cache_data:
             return make_response(
                 success=False,
-                message="Required param change_email_code is not correct or was expired.",
+                message="Wrong input. Required query argument change_email_code is not correct or was expired.",
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
         user_id, new_email = change_email_cache_data["user_id"], change_email_cache_data["new_email"]
         try:
-            await User.update_user(user_id, email=new_email)
+            await User.update(user_id, email=new_email)
         except SWSDatabaseError:
             return make_response(
                 success=False,
-                message="Failed to update user email.",
+                message="Failure. The user email was not updated.",
                 http_status=HTTPStatus.BAD_REQUEST
             )
 

@@ -58,6 +58,6 @@ class UserProfileBudgetView(web.View):
 
         return make_response(
             success=True,
-            message="The user`s budget was updated.",
+            message="Success. The user`s budget was updated.",
             http_status=HTTPStatus.OK
         )

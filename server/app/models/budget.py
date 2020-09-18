@@ -33,8 +33,8 @@ class Budget(db.Model, BaseModelMixin):
                 .where(cls.user_id == user_id) \
                 .gino.first()
         except SQLAlchemyError as err:
-            LOGGER.error("Couldn't retrieve budget for user=%s. Error: %s", user_id, err)
-            raise SWSDatabaseError(f"Failed to retrieve budget for user id {user_id}")
+            LOGGER.error("Could not retrieve budget for user=%s. Error: %s", user_id, err)
+            raise SWSDatabaseError(f"Failed to retrieve budget for user={user_id}.")
 
         return budget
 
@@ -47,8 +47,8 @@ class Budget(db.Model, BaseModelMixin):
                 .where(cls.user_id == user_id) \
                 .gino.status()
         except SQLAlchemyError as err:
-            LOGGER.error("Couldn't update budget for user=%s. Error: %s", user_id, err)
-            raise SWSDatabaseError(f"Failed to update budget for user id {user_id}")
+            LOGGER.error("Could not update budget for user=%s. Error: %s", user_id, err)
+            raise SWSDatabaseError(f"Failed to update budget for user={user_id}.")
 
         updated = parse_status(status)
         if not updated:

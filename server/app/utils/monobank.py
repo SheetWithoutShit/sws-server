@@ -46,7 +46,7 @@ async def save_user_monobank_info(user_id, user_monobank_token):
 
     last_name, first_name = data.get("name", "").split(" ")
     try:
-        await User.update_user(user_id, first_name=first_name, last_name=last_name, monobank_token=user_monobank_token)
+        await User.update(user_id, first_name=first_name, last_name=last_name, monobank_token=user_monobank_token)
         LOGGER.info("User=%s was successfully updated from monobank client info.", user_id)
     except SWSDatabaseError:
         raise SWSRetryError
@@ -90,5 +90,5 @@ async def save_monobank_month_transactions(user_id, user_monobank_token):
 
     transactions = [prepare_transaction(t) for t in data]
 
-    await Transaction.create_bulk_transactions(transactions)
+    await Transaction.create_bulk(transactions)
     LOGGER.info("User`s=%s transactions were loaded from monobank.", user_id)

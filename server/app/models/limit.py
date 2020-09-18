@@ -8,7 +8,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.db import db
-from app.models import BaseModelMixin
+from app.models import BaseModelMixin, parse_status
 from app.models.mcc import MCCCategory
 from app.utils.errors import SWSDatabaseError
 
@@ -16,7 +16,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Limit(db.Model, BaseModelMixin):
-    """Class that represents budget category limits in system."""
+    """Class that represents Budget Limit in system."""
     __tablename__ = "limit"
     __table_args__ = (
         db.UniqueConstraint('user_id', 'category_id', name='unique_user_category'),
@@ -32,19 +32,22 @@ class Limit(db.Model, BaseModelMixin):
     _limit_user_idx = db.Index("limit_user_idx", "user_id")
 
     @classmethod
-    async def create_limit(cls, user_id, category_id, amount):
-        """Create a new user`s budget category limit in database."""
+    async def get(cls, limit_id):
+        """Return queried budget limit by provided id."""
         try:
-            return await super().create(user_id=user_id, category_id=category_id, amount=amount)
-        except exceptions.UniqueViolationError:
-            raise SWSDatabaseError(f"Limit with that category for user={user_id} already exists.")
+            limit = await super().get(limit_id)
         except SQLAlchemyError as err:
-            LOGGER.error("Could not create limit category (%s) for user=%s. Error: %s", category_id, user_id, err)
-            raise SWSDatabaseError("Failed to create limit budget category in database.")
+            LOGGER.error("Could not retrieve budget limit by id=%s. Error: %s", limit_id, err)
+            raise SWSDatabaseError(f"Failure. Failed to retrieve budget limit={limit_id}.")
+
+        if not limit:
+            raise SWSDatabaseError(f"Failure. The budget limit with id={limit_id} does not exist.")
+
+        return limit
 
     @classmethod
     async def get_user_limits(cls, user_id):
-        """Retrieve user`s budget categories limits by user_id."""
+        """Return queried user`s budget limits."""
         try:
             limits = await db \
                 .select([
@@ -58,7 +61,47 @@ class Limit(db.Model, BaseModelMixin):
                 .gino.all()
 
         except SQLAlchemyError as err:
-            LOGGER.error("Couldn't retrieve budget categories limits for user=%s. Error: %s", user_id, err)
-            raise SWSDatabaseError(f"Failed to retrieve budget categories limits for user id {user_id}")
+            LOGGER.error("Could not retrieve budget limits for user=%s. Error: %s", user_id, err)
+            raise SWSDatabaseError(f"Failure. Failed to retrieve budget limits for user={user_id}.")
 
         return [dict(limit) for limit in limits]
+
+    @classmethod
+    async def create(cls, user_id, category_id, amount):
+        """Create a new budget limit in database."""
+        try:
+            return await super().create(user_id=user_id, category_id=category_id, amount=amount)
+        except exceptions.UniqueViolationError:
+            raise SWSDatabaseError(f"Failure. Limit with that category for user={user_id} already exists.")
+        except SQLAlchemyError as err:
+            LOGGER.error("Could not create limit with category=%s for user=%s. Error: %s", category_id, user_id, err)
+            raise SWSDatabaseError(f"Failure. Failed to create limit budget for user={user_id}.")
+
+    @classmethod
+    async def update(cls, limit_id, amount):
+        """Update budget limit instance in database."""
+        try:
+            status, _ = await super().update \
+                .values(amount=amount) \
+                .where(cls.id == limit_id) \
+                .gino.status()
+        except SQLAlchemyError as err:
+            LOGGER.error("Could not update budget limit=%s. Error: %s", limit_id, err)
+            raise SWSDatabaseError(f"Failure. Failed to update budget limit={limit_id}")
+
+        updated = parse_status(status)
+        if not updated:
+            raise SWSDatabaseError(f"Failure. The budget limit={limit_id} was not updated.")
+
+    @classmethod
+    async def delete(cls, limit_id):
+        """Delete budget limit by provided id."""
+        try:
+            status, _ = await super().delete.where(cls.id == limit_id).gino.status()
+        except SQLAlchemyError as err:
+            LOGGER.error("Could not delete budget limit by id=%s. Error: %s", limit_id, err)
+            raise SWSDatabaseError(f"Failure. Failed to delete budget limit={limit_id}")
+
+        deleted = parse_status(status)
+        if not deleted:
+            raise SWSDatabaseError(f"Failure. The budget category limit={limit_id} was not deleted.")

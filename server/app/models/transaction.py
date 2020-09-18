@@ -36,28 +36,28 @@ class Transaction(db.Model, BaseModelMixin):
     _transaction_user_timestamp_idx = db.Index("transaction_user_timestamp_idx", "user_id", "timestamp")
 
     @classmethod
-    async def create_transaction(cls, transaction):
+    async def create(cls, transaction):
         """Create a new transaction in database."""
         try:
             return await super().create(**transaction)
         except exceptions.UniqueViolationError:
             LOGGER.error("A transaction with that id already exists. Transaction: %s", transaction)
-            raise SWSDatabaseError(f"A transaction with that id already exists: {transaction}.")
+            raise SWSDatabaseError(f"Failure. The transaction={transaction['id']} already exists.")
         except SQLAlchemyError as err:
-            LOGGER.error("Couldn't create transaction. Error: %s", err)
-            raise SWSDatabaseError("Failed to create a new transaction in database.")
+            LOGGER.error("Could not create transaction. Error: %s", err)
+            raise SWSDatabaseError("Failure. Failed to create a new transaction in database.")
 
     @classmethod
-    async def create_bulk_transactions(cls, transactions):
+    async def create_bulk(cls, transactions):
         """Bulk create transactions."""
         for transaction in transactions:
             try:
-                await cls.create_transaction(transaction)
+                await cls.create(transaction)
             except SWSDatabaseError:
                 continue
 
     @classmethod
-    async def get_transactions(cls, user_id, start_date, end_date):
+    async def filter(cls, user_id, start_date, end_date):
         """Retrieve transactions for provided period by user_id."""
         try:
             transactions = await cls.query \
@@ -66,8 +66,8 @@ class Transaction(db.Model, BaseModelMixin):
                     between(cls.timestamp, start_date, end_date)) \
                 .gino.all()
         except SQLAlchemyError as err:
-            LOGGER.error("Couldn't retrieve transactions for user=%s. Error: %s", user_id, err)
-            raise SWSDatabaseError(f"Failed to retrieve transactions for user id {user_id}")
+            LOGGER.error("Could not retrieve transactions for user=%s. Error: %s", user_id, err)
+            raise SWSDatabaseError(f"Failure. Failed to retrieve transactions for user={user_id}.")
 
         return transactions
 
@@ -91,8 +91,8 @@ class Transaction(db.Model, BaseModelMixin):
                 .group_by(MCCCategory.name, MCCCategory.info) \
                 .gino.all()
         except SQLAlchemyError as err:
-            LOGGER.error("Couldn't retrieve month transaction report for user=%s. Error: %s", user_id, err)
-            raise SWSDatabaseError(f"Failed to retrieve month ({month}.{year}) report for user id {user_id}")
+            LOGGER.error("Could not retrieve month transaction report for user=%s. Error: %s", user_id, err)
+            raise SWSDatabaseError(f"Failure. Failed to retrieve monthly ({month}.{year}) report for user={user_id}")
 
         return [dict(item) for item in reports]
 
@@ -133,7 +133,7 @@ class Transaction(db.Model, BaseModelMixin):
                 .group_by("date") \
                 .gino.all()
         except SQLAlchemyError as err:
-            LOGGER.error("Couldn't retrieve daily transactions reports for user=%s. Error: %s", user_id, err)
-            raise SWSDatabaseError(f"Failed to retrieve daily transactions reports for user id {user_id}.")
+            LOGGER.error("Could not retrieve daily transactions reports for user=%s. Error: %s", user_id, err)
+            raise SWSDatabaseError(f"Failed to retrieve daily transactions reports for user={user_id}.")
 
         return reports

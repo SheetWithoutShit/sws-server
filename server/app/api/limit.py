@@ -15,13 +15,13 @@ limit_routes = web.RouteTableDef()
 
 
 @limit_routes.view("/limits/categories")
-class LimitCategoriesView(web.View):
+class BudgetLimitCategoriesView(web.View):
     """Views to interact with limit categories."""
 
     async def get(self):
         """Retrieve all existing categories for limits."""
         try:
-            categories = await MCCCategory.get_categories()
+            categories = await MCCCategory.get_names()
         except SWSDatabaseError as err:
             return make_response(
                 success=False,
@@ -37,11 +37,11 @@ class LimitCategoriesView(web.View):
 
 
 @limit_routes.view("/limits")
-class LimitsView(web.View):
-    """Views to interact with user budget categories limits."""
+class BudgetLimitsView(web.View):
+    """Views to interact with budget limits."""
 
     async def get(self):
-        """Retrieve user`s budget categories limits."""
+        """Retrieve user`s budget limits."""
         try:
             limits = await Limit.get_user_limits(self.request.user_id)
         except SWSDatabaseError as err:
@@ -58,7 +58,7 @@ class LimitsView(web.View):
         )
 
     async def post(self):
-        """Create user budget category limit."""
+        """Create a new budget limit for user."""
         body = self.request.body
 
         try:
@@ -88,7 +88,7 @@ class LimitsView(web.View):
             )
 
         try:
-            limit = await Limit.create_limit(self.request.user_id, category.id, amount)
+            limit = await Limit.create(self.request.user_id, category.id, amount)
         except SWSDatabaseError as err:
             return make_response(
                 success=False,
@@ -99,7 +99,83 @@ class LimitsView(web.View):
         response_data = {"category": category_name, **limit.as_dict()}
         return make_response(
             success=True,
-            message="The user`s budget category limit was created.",
+            message="Success. The budget limit for user was created.",
             data=response_data,
+            http_status=HTTPStatus.OK
+        )
+
+
+@limit_routes.view(r"/limits/{limit_id:\d+}")
+class LimitView(web.View):
+    """Views to interact with user's budget limit."""
+
+    async def put(self):
+        """Update user's budget limit."""
+        body = self.request.body
+
+        try:
+            amount = body["amount"]
+        except KeyError:
+            return make_response(
+                success=False,
+                message="Wrong input. Required field amount is not provided.",
+                http_status=HTTPStatus.BAD_REQUEST
+            )
+
+        validation_errors = validate_limit_amount(amount)
+        if validation_errors:
+            return make_response(
+                success=False,
+                message=f"Wrong input: {' '.join(validation_errors)}",
+                http_status=HTTPStatus.BAD_REQUEST
+            )
+
+        limit_id = int(self.request.match_info["limit_id"])
+        try:
+            limit = await Limit.get_by_id(limit_id)
+        except SWSDatabaseError as err:
+            return make_response(
+                success=False,
+                message=str(err),
+                http_status=HTTPStatus.BAD_REQUEST
+            )
+
+        if limit.user_id != self.request.user_id:
+            return make_response(
+                success=False,
+                message="Forbidden. You don't have permission to edit this limit.",
+                http_status=HTTPStatus.FORBIDDEN
+            )
+
+        try:
+            await Limit.update(limit.id, amount)
+        except SWSDatabaseError as err:
+            return make_response(
+                success=False,
+                message=str(err),
+                http_status=HTTPStatus.BAD_REQUEST
+            )
+
+        return make_response(
+            success=True,
+            message="Success. The user`s budget limit was updated.",
+            http_status=HTTPStatus.OK
+        )
+
+    async def delete(self):
+        """Delete user's budget limit."""
+        limit_id = int(self.request.match_info["limit_id"])
+        try:
+            await Limit.delete(limit_id)
+        except SWSDatabaseError as err:
+            return make_response(
+                success=False,
+                message=str(err),
+                http_status=HTTPStatus.BAD_REQUEST
+            )
+
+        return make_response(
+            success=True,
+            message="Success. The user`s budget limit was deleted.",
             http_status=HTTPStatus.OK
         )

@@ -30,7 +30,7 @@ class TransactionsView(web.View):
             return make_response(
                 success=False,
                 message="Wrong input. Query arguments start_date or end_date is not correct. "
-                        f"Expected string: {DATETIME_FORMAT}.",
+                        f"Expected strings: {DATETIME_FORMAT}.",
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
@@ -66,7 +66,7 @@ class TransactionMonthReportView(web.View):
         except (TypeError, ValueError):
             return make_response(
                 success=False,
-                message="Wrong input. Required arguments year or month is not correct.",
+                message="Wrong input. Required query arguments year or month is not correct.",
                 http_status=HTTPStatus.BAD_REQUEST
             )
 

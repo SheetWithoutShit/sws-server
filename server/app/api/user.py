@@ -71,7 +71,7 @@ class UserTelegramView(web.View):
         response_data = {"invitation_link": telegram_invitation_link}
         return make_response(
             success=True,
-            message="The invitation link to telegram bot was created successfully.",
+            message="Success. The invitation link to telegram bot was created.",
             data=response_data,
             http_status=HTTPStatus.OK,
         )
@@ -114,6 +114,6 @@ class UserMonobankView(web.View):
 
         return make_response(
             success=True,
-            message="The monobank token was applied successfully.",
+            message="Success. The monobank token was applied.",
             http_status=HTTPStatus.OK,
         )

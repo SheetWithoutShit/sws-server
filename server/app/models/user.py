@@ -58,43 +58,16 @@ class User(db.Model, BaseModelMixin):
         return bcrypt.checkpw(password_bin, password_hash_bin)
 
     @classmethod
-    async def create_user(cls, email, password):
-        """Create a new user in database."""
-        try:
-            return await super().create(email=email, password=password)
-        except exceptions.UniqueViolationError:
-            raise SWSDatabaseError(f"A user with that email address already exists: {email}.")
-        except SQLAlchemyError as err:
-            LOGGER.error("Could not create user=%s. Error: %s", email, err)
-            raise SWSDatabaseError("Failed to create a new user in database.")
-
-    @classmethod
-    async def update_user(cls, user_id, **kwargs):
-        """Update user instance in database by user_id."""
-        try:
-            status, _ = await cls.update \
-                .values(**kwargs) \
-                .where(cls.id == user_id) \
-                .gino.status()
-        except SQLAlchemyError as err:
-            LOGGER.error("Couldn't update user with id=%s. Error: %s", user_id, err)
-            raise SWSDatabaseError(f"Failed to update user with id={user_id}")
-
-        updated = parse_status(status)
-        if not updated:
-            raise SWSDatabaseError("The user was not updated.")
-
-    @classmethod
-    async def get_by_id(cls, id_):
+    async def get_by_id(cls, user_id):
         """Return queried user by provided id."""
         try:
-            user = await cls.get(id_)
+            user = await cls.get(user_id)
         except SQLAlchemyError as err:
-            LOGGER.error("Could not retrieve user by id=%s. Error: %s", id_, err)
-            raise SWSDatabaseError(f"Failed to retrieve user by id={id_}")
+            LOGGER.error("Could not retrieve user=%s. Error: %s", user_id, err)
+            raise SWSDatabaseError(f"Failure. Failed to retrieve user={user_id}")
 
         if not user:
-            raise SWSDatabaseError(f"A user with this id does not exist: {id_}.")
+            raise SWSDatabaseError(f"Failure. The user={user_id} does not exist.")
 
         return user
 
@@ -104,23 +77,50 @@ class User(db.Model, BaseModelMixin):
         try:
             user = await cls.query.where(User.email == email).gino.first()
         except SQLAlchemyError as err:
-            LOGGER.error("Could not retrieve user by email=%s. Error: %s", email, err)
-            raise SWSDatabaseError(f"Failed to retrieve user by email={email}")
+            LOGGER.error("Could not retrieve user=%s. Error: %s", email, err)
+            raise SWSDatabaseError(f"Failure. Failed to retrieve user={email}")
 
         if not user:
-            raise SWSDatabaseError(f"A user with this email does not exist: {email}.")
+            raise SWSDatabaseError(f"Failure. The user={email} does not exist.")
 
         return user
 
     @classmethod
-    async def delete(cls, id_):
+    async def create(cls, email, password):
+        """Create a new user in database."""
+        try:
+            return await super().create(email=email, password=password)
+        except exceptions.UniqueViolationError:
+            raise SWSDatabaseError(f"Failure. A user with email={email} already exists.")
+        except SQLAlchemyError as err:
+            LOGGER.error("Could not create user=%s. Error: %s", email, err)
+            raise SWSDatabaseError("Failure. Failed to create a new user in database.")
+
+    @classmethod
+    async def update(cls, user_id, **kwargs):
+        """Update user instance in database by user_id."""
+        try:
+            status, _ = await super().update \
+                .values(**kwargs) \
+                .where(cls.id == user_id) \
+                .gino.status()
+        except SQLAlchemyError as err:
+            LOGGER.error("Could not update user=%s. Error: %s", user_id, err)
+            raise SWSDatabaseError(f"Failure. Failed to update user={user_id}")
+
+        updated = parse_status(status)
+        if not updated:
+            raise SWSDatabaseError(f"Failure. The user={user_id} was not updated.")
+
+    @classmethod
+    async def delete(cls, user_id):
         """Delete user instance by provided id."""
         try:
-            status, _ = await super().delete.where(cls.id == id_).gino.status()
+            status, _ = await super().delete.where(cls.id == user_id).gino.status()
         except SQLAlchemyError as err:
-            LOGGER.error("Could not delete user by id=%s. Error: %s", id_, err)
-            raise SWSDatabaseError(f"Failed to delete user by id={id_}")
+            LOGGER.error("Could not delete user=%s. Error: %s", user_id, err)
+            raise SWSDatabaseError(f"Failure. Failed to delete user={user_id}")
 
         deleted = parse_status(status)
         if not deleted:
-            raise SWSDatabaseError("The user was not deleted.")
+            raise SWSDatabaseError(f"Failure. The user={user_id} was not deleted.")
