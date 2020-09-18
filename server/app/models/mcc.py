@@ -32,8 +32,8 @@ class MCC(db.Model, BaseModelMixin):
         try:
             mcc_codes = [mcc.code for mcc in await cls.query.gino.all()]
         except SQLAlchemyError as err:
-            LOGGER.error("Couldn't retrieve all MCC. Error: %s", err)
-            raise SWSDatabaseError("Failed to retrieve all MCC.")
+            LOGGER.error("Couldn't retrieve all MCC codes. Error: %s", err)
+            raise SWSDatabaseError("Failure. Failed to retrieve all MCC codes.")
         else:
             await cache.set(MCC_CODES_CACHE_KEY, mcc_codes)
 
@@ -51,16 +51,16 @@ class MCCCategory(db.Model, BaseModelMixin):
     mccs = relationship("mcc", back_populates="category")
 
     @classmethod
-    async def get_categories(cls):
-        """Retrieve all existing mcc categories."""
+    async def get_names(cls):
+        """Retrieve all MCC categories."""
         mcc_categories = await cache.get(MCC_CATEGORIES_CACHE_KEY)
         if mcc_categories:
             return mcc_categories
         try:
             mcc_categories = [mcc.name for mcc in await cls.query.gino.all()]
         except SQLAlchemyError as err:
-            LOGGER.error("Couldn't retrieve all MCC categories. Error: %s", err)
-            raise SWSDatabaseError("Failed to retrieve all MCC categories.")
+            LOGGER.error("Could not retrieve all MCC categories. Error: %s", err)
+            raise SWSDatabaseError("Failure. Failed to retrieve all MCC categories.")
         else:
             await cache.set(MCC_CATEGORIES_CACHE_KEY, mcc_categories)
 
@@ -68,14 +68,14 @@ class MCCCategory(db.Model, BaseModelMixin):
 
     @classmethod
     async def get_by_name(cls, name):
-        """Return queried limit by provided name."""
+        """Return queried category by provided name."""
         try:
             category = await cls.query.where(cls.name == name).gino.first()
         except SQLAlchemyError as err:
-            LOGGER.error("Could not retrieve MCC category by name=%s. Error: %s", name, err)
-            raise SWSDatabaseError(f"Failed to retrieve MCC category by name={name}")
+            LOGGER.error("Could not retrieve MCC category=%s. Error: %s", name, err)
+            raise SWSDatabaseError(f"Failure. Failed to retrieve MCC category={name}")
 
         if not category:
-            raise SWSDatabaseError(f"The category '{name}' does not exist.")
+            raise SWSDatabaseError(f"Failure. The category={name} does not exist.")
 
         return category
