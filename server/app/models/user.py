@@ -102,7 +102,7 @@ class User(db.Model, BaseModelMixin):
     async def get_by_email(cls, email):
         """Return queried user by provided email."""
         try:
-            user = await User.query.where(User.email == email).gino.first()
+            user = await cls.query.where(User.email == email).gino.first()
         except SQLAlchemyError as err:
             LOGGER.error("Could not retrieve user by email=%s. Error: %s", email, err)
             raise SWSDatabaseError(f"Failed to retrieve user by email={email}")
