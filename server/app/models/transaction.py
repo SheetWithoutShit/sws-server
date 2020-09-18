@@ -10,7 +10,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.db import db
 from app.models import BaseModelMixin
-from app.models.mcc import MCC
+from app.models.mcc import MCC, MCCCategory
 from app.cache import cache, MONTH_REPORT_CACHE_EXPIRE, MONTH_REPORT_CACHE_KEY
 from app.utils.errors import SWSDatabaseError
 
@@ -23,7 +23,7 @@ class Transaction(db.Model, BaseModelMixin):
     __tablename__ = "transaction"
 
     id = db.Column(db.String(255), primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"))
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
     amount = db.Column(db.Numeric(12, 2), nullable=False)
     balance = db.Column(db.Numeric(12, 2))
     cashback = db.Column(db.Numeric(12, 2), default=0)
@@ -77,19 +77,18 @@ class Transaction(db.Model, BaseModelMixin):
         try:
             reports = await db \
                 .select([
-                    cls.mcc,
-                    MCC.category,
-                    MCC.info,
+                    MCCCategory.name,
+                    MCCCategory.info,
                     cast(func.abs(func.sum(cls.amount)), db.String).label("amount")
                 ]) \
-                .select_from(cls.join(MCC)) \
+                .select_from(cls.join(MCC.join(MCCCategory))) \
                 .where(
                     (cls.user_id == user_id) &
                     (cls.amount < 0) &
                     (extract("month", cls.timestamp) == month) &
                     (extract("year", cls.timestamp) == year)
                 ) \
-                .group_by(cls.mcc, MCC.category, MCC.info) \
+                .group_by(MCCCategory.name, MCCCategory.info) \
                 .gino.all()
         except SQLAlchemyError as err:
             LOGGER.error("Couldn't retrieve month transaction report for user=%s. Error: %s", user_id, err)

@@ -2,6 +2,7 @@
 
 import logging
 
+from sqlalchemy.orm import relationship
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.db import db
@@ -18,8 +19,9 @@ class MCC(db.Model, BaseModelMixin):
     __tablename__ = "mcc"
 
     code = db.Column(db.Integer, primary_key=True)
-    category = db.Column(db.String(255), nullable=False)
-    info = db.Column(db.String)
+    category_id = db.Column(db.Integer, db.ForeignKey("mcc_category.id", ondelete="CASCADE"), nullable=False)
+
+    category = relationship("mcc_category", back_populates="mccs")
 
     @classmethod
     async def get_codes(cls):
@@ -36,3 +38,14 @@ class MCC(db.Model, BaseModelMixin):
             await cache.set(MCC_CODES_CACHE_KEY, mcc_codes)
 
         return mcc_codes
+
+
+class MCCCategory(db.Model, BaseModelMixin):
+    """Class that represents MCC category in system."""
+    __tablename__ = "mcc_category"
+
+    id = db.Column(db.SmallInteger, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(255), nullable=False)
+    info = db.Column(db.String(255), nullable=False, default="")
+
+    mccs = relationship("mcc", back_populates="category")

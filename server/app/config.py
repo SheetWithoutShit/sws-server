@@ -44,6 +44,9 @@ POSTGRES_DSN = URL(
     database=POSTGRES_DB,
 )
 
+# REDIS stuff
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
 
 # Telegram stuff
 TELEGRAM_BOT_NAME = "SheetWithoutShitBot"
