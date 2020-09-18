@@ -31,8 +31,9 @@ class User(db.Model, BaseModelMixin):
     monobank_token = db.Column(db.String(255), nullable=False, default="")
     created = db.Column(db.DateTime, nullable=False, default=func.now())
 
-    budget = relationship("budget", uselist=False, back_populates="user")
+    budget = relationship("budget", back_populates="user", uselist=False)
     transactions = relationship("transaction", back_populates="user")
+    limits = relationship("limit", back_populates="user")
 
     private_columns = ["password", "monobank_token"]
 

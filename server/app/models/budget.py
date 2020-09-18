@@ -19,7 +19,7 @@ class Budget(db.Model, BaseModelMixin):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     income = db.Column(db.Numeric(12, 2), nullable=False, default=0.0)
     savings = db.Column(db.SmallInteger, nullable=False, default=0)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"))
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
 
     user = relationship("user", back_populates="budget")
 

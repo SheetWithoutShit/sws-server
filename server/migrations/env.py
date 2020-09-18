@@ -13,8 +13,9 @@ from app.config import POSTGRES_DSN
 # Do not forget to import your models here
 from app.models.user import User
 from app.models.budget import Budget
-from app.models.mcc import MCC
+from app.models.mcc import MCC, MCCCategory
 from app.models.transaction import Transaction
+from app.models.limit import Limit
 
 
 target_metadata = db
