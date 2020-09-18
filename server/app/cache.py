@@ -7,6 +7,7 @@ from app.config import REDIS_HOST, REDIS_PORT
 MONTH_REPORT_CACHE_KEY = "month-report--{user_id}-{month}-{year}"
 MONTH_REPORT_CACHE_EXPIRE = 60 * 60 * 24 * 30  # 30 days
 MCC_CODES_CACHE_KEY = "mcc-codes"
+MCC_CATEGORIES_CACHE_KEY = "mcc-categories"
 CHANGE_EMAIL_CACHE_KEY = "change-email--{code}"
 CHANGE_EMAIL_CACHE_EXPIRE = 60 * 60 * 24  # 48h
 RESET_PASSWORD_CACHE_KEY = "reset-password--{code}"

@@ -78,3 +78,16 @@ def validate_budget_savings(savings):
         errors.append("Savings is out of range (0-100).")
 
     return errors
+
+
+def validate_limit_amount(amount):
+    """Validate limit amount value."""
+    errors = []
+    if not isinstance(amount, float):
+        errors.append("Amount must be float type.")
+        return errors
+
+    if amount <= 0:
+        errors.append("Amount must be positive value.")
+
+    return errors

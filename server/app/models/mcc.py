@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.db import db
-from app.cache import cache, MCC_CODES_CACHE_KEY
+from app.cache import cache, MCC_CODES_CACHE_KEY, MCC_CATEGORIES_CACHE_KEY
 from app.models import BaseModelMixin
 from app.utils.errors import SWSDatabaseError
 
@@ -49,3 +49,33 @@ class MCCCategory(db.Model, BaseModelMixin):
     info = db.Column(db.String(255), nullable=False, default="")
 
     mccs = relationship("mcc", back_populates="category")
+
+    @classmethod
+    async def get_categories(cls):
+        """Retrieve all existing mcc categories."""
+        mcc_categories = await cache.get(MCC_CATEGORIES_CACHE_KEY)
+        if mcc_categories:
+            return mcc_categories
+        try:
+            mcc_categories = [mcc.name for mcc in await cls.query.gino.all()]
+        except SQLAlchemyError as err:
+            LOGGER.error("Couldn't retrieve all MCC categories. Error: %s", err)
+            raise SWSDatabaseError("Failed to retrieve all MCC categories.")
+        else:
+            await cache.set(MCC_CATEGORIES_CACHE_KEY, mcc_categories)
+
+        return mcc_categories
+
+    @classmethod
+    async def get_by_name(cls, name):
+        """Return queried limit by provided name."""
+        try:
+            category = await cls.query.where(cls.name == name).gino.first()
+        except SQLAlchemyError as err:
+            LOGGER.error("Could not retrieve MCC category by name=%s. Error: %s", name, err)
+            raise SWSDatabaseError(f"Failed to retrieve MCC category by name={name}")
+
+        if not category:
+            raise SWSDatabaseError(f"The category '{name}' does not exist.")
+
+        return category
