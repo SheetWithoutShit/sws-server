@@ -41,7 +41,7 @@ async def save_user_monobank_info(user_id, user_monobank_token):
             data, status = await response.json(), response.status
 
     if status != 200:
-        LOGGER.error("Couldn't retrieve user`s=%s data from monobank. Error: %s", user_id, response)
+        LOGGER.error("Could not retrieve user`s=%s data from monobank. Error: %s", user_id, response)
         raise SWSRetryError
 
     last_name, first_name = data.get("name", "").split(" ")
@@ -66,7 +66,7 @@ async def save_monobank_month_transactions(user_id, user_monobank_token):
             data, status = await response.json(), response.status
 
     if status != 200:
-        LOGGER.error("Couldn't retrieve user`s=%s transactions from monobank. Error: %s", user_id, data)
+        LOGGER.error("Could not retrieve user`s=%s transactions from monobank. Error: %s", user_id, data)
         raise SWSRetryError
 
     try:
@@ -77,13 +77,19 @@ async def save_monobank_month_transactions(user_id, user_monobank_token):
     def prepare_transaction(transaction):
         """Return formatted transaction."""
         costs_converter = 100.0
+
+        mcc_code = transaction["mcc"]
+        if mcc_code not in mccs:
+            LOGGER.error("Could not find MCC code=%s in database.", mcc_code)
+            mcc_code = -1
+
         return {
             "user_id": user_id,
             "id": transaction["id"],
             "amount": transaction["amount"] / costs_converter,
             "balance": transaction["balance"] / costs_converter,
             "cashback": transaction["cashbackAmount"] / costs_converter,
-            "mcc": transaction["mcc"] if transaction["mcc"] in mccs else -1,
+            "mcc": mcc_code,
             "timestamp": datetime.fromtimestamp(transaction["time"]),
             "info": transaction["description"],
         }
