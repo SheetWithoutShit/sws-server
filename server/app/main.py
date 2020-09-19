@@ -40,10 +40,10 @@ async def init_config(app):
 
 def init_logging():
     """
-    Initialize logging stream with debug level to console and
-    create file logger with error level if permission to file allowed.
+    Initialize logging stream with info level to console and
+    create file logger with info level if permission to file allowed.
     """
-    logging.basicConfig(format=LOG_FORMAT, level=logging.DEBUG)
+    logging.basicConfig(format=LOG_FORMAT, level=logging.INFO)
 
     # disabling gino postgres echo logs
     # in order to set echo pass echo=True to db config dict
@@ -54,7 +54,7 @@ def init_logging():
     if log_dir and os.path.isfile(log_filepath) and os.access(log_filepath, os.W_OK):
         formatter = logging.Formatter(LOG_FORMAT)
         file_handler = logging.FileHandler(log_filepath)
-        file_handler.setLevel(logging.ERROR)
+        file_handler.setLevel(logging.INFO)
         file_handler.setFormatter(formatter)
         logging.getLogger("").addHandler(file_handler)
 
