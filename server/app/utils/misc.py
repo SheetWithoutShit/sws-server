@@ -3,7 +3,7 @@
 import asyncio
 import logging
 
-from app.utils.errors import SWSRetryError
+from app.utils.errors import RetryError
 
 
 LOGGER = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ def retry(times, retry_interval=2):
             for time in range(times):
                 try:
                     return await func(*args, **kwargs)
-                except SWSRetryError:
+                except RetryError:
                     await asyncio.sleep(retry_interval ** time)
                     LOGGER.error(
                         "%s(args: %s, kwargs: %s) ... Retrying, attempt #%s.",

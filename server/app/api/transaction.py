@@ -7,7 +7,7 @@ from aiohttp import web
 
 from app.models.transaction import Transaction
 from app.utils.response import make_response
-from app.utils.errors import SWSDatabaseError
+from app.utils.errors import DatabaseError
 from app.utils.time import DATETIME_FORMAT, DATE_FORMAT, generate_days_period
 
 
@@ -36,7 +36,7 @@ class TransactionsView(web.View):
 
         try:
             result = await Transaction.get_transactions(self.request.user_id, start_date, end_date)
-        except SWSDatabaseError as err:
+        except DatabaseError as err:
             return make_response(
                 success=False,
                 message=str(err),
@@ -72,7 +72,7 @@ class TransactionMonthReportView(web.View):
 
         try:
             reports = await Transaction.get_month_report(self.request.user_id, year, month)
-        except SWSDatabaseError as err:
+        except DatabaseError as err:
             return make_response(
                 success=False,
                 message=str(err),
@@ -112,7 +112,7 @@ class TransactionDailyReportView(web.View):
 
         try:
             daily_reports = await Transaction.get_daily_reports(self.request.user_id, start_date, end_date)
-        except SWSDatabaseError as err:
+        except DatabaseError as err:
             return make_response(
                 success=False,
                 message=str(err),

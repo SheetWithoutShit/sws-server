@@ -7,7 +7,7 @@ from aiohttp import web
 from app.models.limit import Limit
 from app.models.mcc import MCCCategory
 from app.utils.response import make_response
-from app.utils.errors import SWSDatabaseError
+from app.utils.errors import DatabaseError
 from app.utils.validators import validate_limit_amount
 
 
@@ -22,7 +22,7 @@ class BudgetLimitCategoriesView(web.View):
         """Retrieve all existing categories for limits."""
         try:
             categories = await MCCCategory.get_names()
-        except SWSDatabaseError as err:
+        except DatabaseError as err:
             return make_response(
                 success=False,
                 message=str(err),
@@ -44,7 +44,7 @@ class BudgetLimitsView(web.View):
         """Retrieve user`s budget limits."""
         try:
             limits = await Limit.get_user_limits(self.request.user_id)
-        except SWSDatabaseError as err:
+        except DatabaseError as err:
             return make_response(
                 success=False,
                 message=str(err),
@@ -72,7 +72,7 @@ class BudgetLimitsView(web.View):
 
         try:
             category = await MCCCategory.get_by_name(category_name)
-        except SWSDatabaseError as err:
+        except DatabaseError as err:
             return make_response(
                 success=False,
                 message=str(err),
@@ -89,7 +89,7 @@ class BudgetLimitsView(web.View):
 
         try:
             limit = await Limit.create(self.request.user_id, category.id, amount)
-        except SWSDatabaseError as err:
+        except DatabaseError as err:
             return make_response(
                 success=False,
                 message=str(err),
@@ -133,7 +133,7 @@ class LimitView(web.View):
         limit_id = int(self.request.match_info["limit_id"])
         try:
             limit = await Limit.get_by_id(limit_id)
-        except SWSDatabaseError as err:
+        except DatabaseError as err:
             return make_response(
                 success=False,
                 message=str(err),
@@ -149,7 +149,7 @@ class LimitView(web.View):
 
         try:
             await Limit.update(limit.id, amount)
-        except SWSDatabaseError as err:
+        except DatabaseError as err:
             return make_response(
                 success=False,
                 message=str(err),
@@ -167,7 +167,7 @@ class LimitView(web.View):
         limit_id = int(self.request.match_info["limit_id"])
         try:
             await Limit.delete(limit_id)
-        except SWSDatabaseError as err:
+        except DatabaseError as err:
             return make_response(
                 success=False,
                 message=str(err),

@@ -1,11 +1,11 @@
 """This module provides custom errors."""
 
 
-class SWSError(Exception):
-    """Class that represents base SWS error."""
+class BaseError(Exception):
+    """Class that represents base error."""
 
     def __init__(self, message=None):
-        """Initialize SWS custom error."""
+        """Initialize base custom error."""
         super().__init__()
         self.message = message
 
@@ -18,13 +18,13 @@ class SWSError(Exception):
         return self.message
 
 
-class SWSDatabaseError(SWSError):
+class DatabaseError(BaseError):
     """Class that represents errors caused on interaction with database."""
 
 
-class SWSTokenError(SWSError):
+class TokenError(BaseError):
     """Class that represents errors caused on interaction with auth token."""
 
 
-class SWSRetryError(SWSError):
+class RetryError(BaseError):
     """Class that represents errors caused for retry."""

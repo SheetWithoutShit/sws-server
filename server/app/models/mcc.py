@@ -8,7 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.db import db
 from app.cache import cache, MCC_CODES_CACHE_KEY, MCC_CATEGORIES_CACHE_KEY
 from app.models import BaseModelMixin
-from app.utils.errors import SWSDatabaseError
+from app.utils.errors import DatabaseError
 
 
 LOGGER = logging.getLogger(__name__)
@@ -33,7 +33,7 @@ class MCC(db.Model, BaseModelMixin):
             mcc_codes = [mcc.code for mcc in await cls.query.gino.all()]
         except SQLAlchemyError as err:
             LOGGER.error("Couldn't retrieve all MCC codes. Error: %s", err)
-            raise SWSDatabaseError("Failure. Failed to retrieve all MCC codes.")
+            raise DatabaseError("Failure. Failed to retrieve all MCC codes.")
         else:
             await cache.set(MCC_CODES_CACHE_KEY, mcc_codes)
 
@@ -60,7 +60,7 @@ class MCCCategory(db.Model, BaseModelMixin):
             mcc_categories = [mcc.name for mcc in await cls.query.gino.all()]
         except SQLAlchemyError as err:
             LOGGER.error("Could not retrieve all MCC categories. Error: %s", err)
-            raise SWSDatabaseError("Failure. Failed to retrieve all MCC categories.")
+            raise DatabaseError("Failure. Failed to retrieve all MCC categories.")
         else:
             await cache.set(MCC_CATEGORIES_CACHE_KEY, mcc_categories)
 
@@ -73,9 +73,9 @@ class MCCCategory(db.Model, BaseModelMixin):
             category = await cls.query.where(cls.name == name).gino.first()
         except SQLAlchemyError as err:
             LOGGER.error("Could not retrieve MCC category=%s. Error: %s", name, err)
-            raise SWSDatabaseError(f"Failure. Failed to retrieve MCC category={name}")
+            raise DatabaseError(f"Failure. Failed to retrieve MCC category={name}")
 
         if not category:
-            raise SWSDatabaseError(f"Failure. The category={name} does not exist.")
+            raise DatabaseError(f"Failure. The category={name} does not exist.")
 
         return category

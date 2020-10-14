@@ -1,27 +1,15 @@
-# Sheet Without Shit. Server
+# Spentless. Server
 
-[![Build Status](https://travis-ci.org/SheetWithoutShit/sws-server.svg?branch=master)](https://travis-ci.org/SheetWithoutShit/sws-server)
+[![Build Status](https://travis-ci.com/SpentlessInc/spentless-server.svg?branch=master)](https://travis-ci.com/SpentlessInc/spentless-server)
 
-TODO: installing
+# Description
+The main API server includes:
+* auth operations
+* get/update budget information
+* get/create/update/delete limit of budget category
+* list of transactions
+* transactions reports
+* activating third-party services (monobank, telegram)
 
-TODO: running
-
-# Environment variables
-```shell script
-MONOBANK_WEBHOOK_SECRET=
-
-POSTGRES_HOST=
-POSTGRES_PORT=5432
-POSTGRES_USER=
-POSTGRES_PASSWORD=
-POSTGRES_DB=
-
-REDIS_HOST=
-REDIS_PORT=6379
-
-SERVER_HOST=
-
-JWT_EXP_DAYS=7
-JWT_ALGORITHM=HS256
-JWT_SECRET_KEY=
-```
+# How to run?
+Follow the instruction placed in [spentless-infrastructure](https://github.com/SpentlessInc/spentless-infrastructure).

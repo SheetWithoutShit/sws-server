@@ -6,7 +6,7 @@ from http import HTTPStatus
 from aiohttp import web
 
 from app.utils.response import make_response
-from app.utils.errors import SWSTokenError
+from app.utils.errors import TokenError
 from app.utils.jwt import decode_token
 
 
@@ -56,7 +56,7 @@ async def auth_middleware(request, handler):
     token = token.split("Bearer ")[-1]
     try:
         payload = decode_token(token, secret_key)
-    except SWSTokenError as err:
+    except TokenError as err:
         return make_response(
             success=False,
             message=f"Wrong credentials. {str(err)}",
