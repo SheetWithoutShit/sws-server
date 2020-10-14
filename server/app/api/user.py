@@ -9,7 +9,7 @@ from aiojobs.aiohttp import spawn
 from app.cache import cache, TELEGRAM_CACHE_KEY
 from app.models.user import User
 from app.utils.response import make_response
-from app.utils.errors import SWSDatabaseError
+from app.utils.errors import DatabaseError
 from app.utils.monobank import setup_webhook, save_user_monobank_info, save_monobank_month_transactions
 
 
@@ -24,7 +24,7 @@ class UserView(web.View):
         """Retrieve user data from database by user id."""
         try:
             user = await User.get_by_id(self.request.user_id)
-        except SWSDatabaseError as err:
+        except DatabaseError as err:
             return make_response(
                 success=False,
                 message=str(err),
@@ -41,7 +41,7 @@ class UserView(web.View):
         """Delete user and his data from system."""
         try:
             await User.delete(self.request.user_id)
-        except SWSDatabaseError as err:
+        except DatabaseError as err:
             return make_response(
                 success=False,
                 message=str(err),

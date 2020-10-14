@@ -49,5 +49,5 @@ REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
 
 # Telegram stuff
-TELEGRAM_BOT_NAME = "SheetWithoutShitBot"
-TELEGRAM_BOT_INVITATION_LINK = "https://t.me/SheetWithoutShitBot?start={code}"
+TELEGRAM_BOT_NAME = "SpentlessBot"
+TELEGRAM_BOT_INVITATION_LINK = "https://t.me/SpentlessBot?start={code}"

@@ -10,7 +10,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.db import db
 from app.models import BaseModelMixin, parse_status
-from app.utils.errors import SWSDatabaseError
+from app.utils.errors import DatabaseError
 
 
 LOGGER = logging.getLogger(__name__)
@@ -64,10 +64,10 @@ class User(db.Model, BaseModelMixin):
             user = await cls.get(user_id)
         except SQLAlchemyError as err:
             LOGGER.error("Could not retrieve user=%s. Error: %s", user_id, err)
-            raise SWSDatabaseError(f"Failure. Failed to retrieve user={user_id}")
+            raise DatabaseError(f"Failure. Failed to retrieve user={user_id}")
 
         if not user:
-            raise SWSDatabaseError(f"Failure. The user={user_id} does not exist.")
+            raise DatabaseError(f"Failure. The user={user_id} does not exist.")
 
         return user
 
@@ -78,10 +78,10 @@ class User(db.Model, BaseModelMixin):
             user = await cls.query.where(User.email == email).gino.first()
         except SQLAlchemyError as err:
             LOGGER.error("Could not retrieve user=%s. Error: %s", email, err)
-            raise SWSDatabaseError(f"Failure. Failed to retrieve user={email}")
+            raise DatabaseError(f"Failure. Failed to retrieve user={email}")
 
         if not user:
-            raise SWSDatabaseError(f"Failure. The user={email} does not exist.")
+            raise DatabaseError(f"Failure. The user={email} does not exist.")
 
         return user
 
@@ -91,10 +91,10 @@ class User(db.Model, BaseModelMixin):
         try:
             return await super().create(email=email, password=password)
         except exceptions.UniqueViolationError:
-            raise SWSDatabaseError(f"Failure. A user with email={email} already exists.")
+            raise DatabaseError(f"Failure. A user with email={email} already exists.")
         except SQLAlchemyError as err:
             LOGGER.error("Could not create user=%s. Error: %s", email, err)
-            raise SWSDatabaseError("Failure. Failed to create a new user in database.")
+            raise DatabaseError("Failure. Failed to create a new user in database.")
 
     @classmethod
     async def update(cls, user_id, **kwargs):
@@ -106,11 +106,11 @@ class User(db.Model, BaseModelMixin):
                 .gino.status()
         except SQLAlchemyError as err:
             LOGGER.error("Could not update user=%s. Error: %s", user_id, err)
-            raise SWSDatabaseError(f"Failure. Failed to update user={user_id}")
+            raise DatabaseError(f"Failure. Failed to update user={user_id}")
 
         updated = parse_status(status)
         if not updated:
-            raise SWSDatabaseError(f"Failure. The user={user_id} was not updated.")
+            raise DatabaseError(f"Failure. The user={user_id} was not updated.")
 
     @classmethod
     async def delete(cls, user_id):
@@ -119,8 +119,8 @@ class User(db.Model, BaseModelMixin):
             status, _ = await super().delete.where(cls.id == user_id).gino.status()
         except SQLAlchemyError as err:
             LOGGER.error("Could not delete user=%s. Error: %s", user_id, err)
-            raise SWSDatabaseError(f"Failure. Failed to delete user={user_id}")
+            raise DatabaseError(f"Failure. Failed to delete user={user_id}")
 
         deleted = parse_status(status)
         if not deleted:
-            raise SWSDatabaseError(f"Failure. The user={user_id} was not deleted.")
+            raise DatabaseError(f"Failure. The user={user_id} was not deleted.")

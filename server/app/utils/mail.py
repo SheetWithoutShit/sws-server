@@ -7,13 +7,13 @@ import aiosmtplib
 from jinja2 import Template
 
 from app.utils.misc import retry
-from app.utils.errors import SWSRetryError
+from app.utils.errors import RetryError
 from app.config import SMTP_HOST, SMTP_LOGIN, SMTP_PASSWORD, EMAILS_DIR
 
 
 LOGGER = logging.getLogger(__name__)
 
-MAIL_SUBJECT = "Sheet Without Shit. {subject}"
+MAIL_SUBJECT = "Spentless. {subject}"
 RESET_PASSWORD_SUBJECT = "Reset Password"
 RESET_PASSWORD_TEMPLATE = "reset_password.html"
 CHANGE_EMAIL_SUBJECT = "Confirmation of Email changing"
@@ -55,7 +55,7 @@ async def send_mail(message):
         await smtp.send_message(message)
     except aiosmtplib.errors.SMTPException as err:
         LOGGER.error("Could not send email to user. Error: %s", str(err))
-        raise SWSRetryError
+        raise RetryError
 
 
 async def send_reset_password_mail(user, reset_password_url):

@@ -6,7 +6,7 @@ from aiohttp import web
 
 from app.models.budget import Budget
 from app.utils.response import make_response
-from app.utils.errors import SWSDatabaseError
+from app.utils.errors import DatabaseError
 from app.utils.validators import validate_budget_savings, validate_budget_income
 
 
@@ -21,7 +21,7 @@ class UserProfileBudgetView(web.View):
         """Retrieve user`s profile budget information."""
         try:
             budget = await Budget.get_budget(self.request.user_id)
-        except SWSDatabaseError as err:
+        except DatabaseError as err:
             return make_response(
                 success=False,
                 message=str(err),
@@ -49,7 +49,7 @@ class UserProfileBudgetView(web.View):
 
         try:
             await Budget.update_budget(self.request.user_id, savings, income)
-        except SWSDatabaseError as err:
+        except DatabaseError as err:
             return make_response(
                 success=False,
                 message=str(err),

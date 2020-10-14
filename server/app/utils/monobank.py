@@ -10,7 +10,7 @@ from app.models.user import User
 from app.models.transaction import Transaction
 from app.utils.misc import retry
 from app.utils.jwt import generate_token
-from app.utils.errors import SWSDatabaseError, SWSRetryError
+from app.utils.errors import DatabaseError, RetryError
 
 
 LOGGER = logging.getLogger(__name__)
@@ -42,14 +42,14 @@ async def save_user_monobank_info(user_id, user_monobank_token):
 
     if status != 200:
         LOGGER.error("Could not retrieve user`s=%s data from monobank. Error: %s", user_id, response)
-        raise SWSRetryError
+        raise RetryError
 
     last_name, first_name = data.get("name", "").split(" ")
     try:
         await User.update(user_id, first_name=first_name, last_name=last_name, monobank_token=user_monobank_token)
         LOGGER.info("User=%s was successfully updated from monobank client info.", user_id)
-    except SWSDatabaseError:
-        raise SWSRetryError
+    except DatabaseError:
+        raise RetryError
 
 
 @retry(times=3)
@@ -67,12 +67,12 @@ async def save_monobank_month_transactions(user_id, user_monobank_token):
 
     if status != 200:
         LOGGER.error("Could not retrieve user`s=%s transactions from monobank. Error: %s", user_id, data)
-        raise SWSRetryError
+        raise RetryError
 
     try:
         mccs = await MCC.get_codes()
-    except SWSDatabaseError:
-        raise SWSRetryError
+    except DatabaseError:
+        raise RetryError
 
     def prepare_transaction(transaction):
         """Return formatted transaction."""

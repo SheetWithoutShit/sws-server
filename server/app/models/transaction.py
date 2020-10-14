@@ -12,7 +12,7 @@ from app.db import db
 from app.models import BaseModelMixin
 from app.models.mcc import MCC, MCCCategory
 from app.cache import cache, MONTH_REPORT_CACHE_EXPIRE, MONTH_REPORT_CACHE_KEY
-from app.utils.errors import SWSDatabaseError
+from app.utils.errors import DatabaseError
 
 
 LOGGER = logging.getLogger(__name__)
@@ -42,10 +42,10 @@ class Transaction(db.Model, BaseModelMixin):
             return await super().create(**transaction)
         except exceptions.UniqueViolationError:
             LOGGER.error("A transaction with that id already exists. Transaction: %s", transaction)
-            raise SWSDatabaseError(f"Failure. The transaction={transaction['id']} already exists.")
+            raise DatabaseError(f"Failure. The transaction={transaction['id']} already exists.")
         except SQLAlchemyError as err:
             LOGGER.error("Could not create transaction. Error: %s", err)
-            raise SWSDatabaseError("Failure. Failed to create a new transaction in database.")
+            raise DatabaseError("Failure. Failed to create a new transaction in database.")
 
     @classmethod
     async def create_bulk(cls, transactions):
@@ -53,7 +53,7 @@ class Transaction(db.Model, BaseModelMixin):
         for transaction in transactions:
             try:
                 await cls.create(transaction)
-            except SWSDatabaseError:
+            except DatabaseError:
                 continue
 
     @classmethod
@@ -67,7 +67,7 @@ class Transaction(db.Model, BaseModelMixin):
                 .gino.all()
         except SQLAlchemyError as err:
             LOGGER.error("Could not retrieve transactions for user=%s. Error: %s", user_id, err)
-            raise SWSDatabaseError(f"Failure. Failed to retrieve transactions for user={user_id}.")
+            raise DatabaseError(f"Failure. Failed to retrieve transactions for user={user_id}.")
 
         return transactions
 
@@ -92,7 +92,7 @@ class Transaction(db.Model, BaseModelMixin):
                 .gino.all()
         except SQLAlchemyError as err:
             LOGGER.error("Could not retrieve month transaction report for user=%s. Error: %s", user_id, err)
-            raise SWSDatabaseError(f"Failure. Failed to retrieve monthly ({month}.{year}) report for user={user_id}")
+            raise DatabaseError(f"Failure. Failed to retrieve monthly ({month}.{year}) report for user={user_id}")
 
         return [dict(item) for item in reports]
 
@@ -134,6 +134,6 @@ class Transaction(db.Model, BaseModelMixin):
                 .gino.all()
         except SQLAlchemyError as err:
             LOGGER.error("Could not retrieve daily transactions reports for user=%s. Error: %s", user_id, err)
-            raise SWSDatabaseError(f"Failed to retrieve daily transactions reports for user={user_id}.")
+            raise DatabaseError(f"Failed to retrieve daily transactions reports for user={user_id}.")
 
         return reports

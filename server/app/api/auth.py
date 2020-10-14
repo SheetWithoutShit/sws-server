@@ -16,10 +16,10 @@ from app.cache import (
 )
 from app.models.user import User
 from app.utils.response import make_response
-from app.utils.errors import SWSDatabaseError
+from app.utils.errors import DatabaseError
 from app.utils.validators import validate_email, validate_password
 from app.utils.jwt import generate_token, decode_token
-from app.utils.errors import SWSTokenError
+from app.utils.errors import TokenError
 from app.utils.mail import send_reset_password_mail, send_change_email_mail, send_user_signup_mail
 
 
@@ -53,7 +53,7 @@ class AuthSignUp(web.View):
         password_hash = User.generate_password_hash(password)
         try:
             user = await User.create(email=email, password=password_hash)
-        except SWSDatabaseError as err:
+        except DatabaseError as err:
             return make_response(
                 success=False,
                 message=str(err),
@@ -91,7 +91,7 @@ class AuthSignIn(web.View):
 
         try:
             user = await User.get_by_email(email)
-        except SWSDatabaseError as err:
+        except DatabaseError as err:
             return make_response(
                 success=False,
                 message=str(err),
@@ -149,7 +149,7 @@ class AuthRefreshAccess(web.View):
 
         try:
             payload = decode_token(refresh_token, config.JWT_SECRET_KEY)
-        except SWSTokenError as err:
+        except TokenError as err:
             return make_response(
                 success=False,
                 message=f"Wrong input. Invalid refresh access token. {str(err)}",
@@ -198,7 +198,7 @@ class AuthChangePasswordView(web.View):
 
         try:
             user = await User.get_by_id(self.request.user_id)
-        except SWSDatabaseError as err:
+        except DatabaseError as err:
             return make_response(
                 success=False,
                 message=str(err),
@@ -224,7 +224,7 @@ class AuthChangePasswordView(web.View):
         password_hash = User.generate_password_hash(new_password)
         try:
             await User.update(self.request.user_id, password=password_hash)
-        except SWSDatabaseError:
+        except DatabaseError:
             return make_response(
                 success=False,
                 message="Failure. The user password was not changed.",
@@ -274,7 +274,7 @@ class AuthResetPasswordView(web.View):
 
         try:
             user = await User.get_by_email(email)
-        except SWSDatabaseError as err:
+        except DatabaseError as err:
             return make_response(
                 success=False,
                 message=str(err),
@@ -328,7 +328,7 @@ class AuthResetPasswordView(web.View):
         password_hash = User.generate_password_hash(new_password)
         try:
             await User.update(int(user_id), password=password_hash)
-        except SWSDatabaseError:
+        except DatabaseError:
             return make_response(
                 success=False,
                 message="Failure. The user password was not changed.",
@@ -372,7 +372,7 @@ class AuthChangeEmailView(web.View):
 
         try:
             user = await User.get_by_id(user_id)
-        except SWSDatabaseError as err:
+        except DatabaseError as err:
             return make_response(
                 success=False,
                 message=str(err),
@@ -430,7 +430,7 @@ class AuthChangeEmailConfirmView(web.View):
         user_id, new_email = change_email_cache_data["user_id"], change_email_cache_data["new_email"]
         try:
             await User.update(user_id, email=new_email)
-        except SWSDatabaseError:
+        except DatabaseError:
             return make_response(
                 success=False,
                 message="Failure. The user email was not updated.",
