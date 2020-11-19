@@ -7,8 +7,7 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from app.db import db
-from app.config import POSTGRES_DSN
+from app.db import db, get_database_dsn
 
 # Do not forget to import your models here
 from app.models.user import User
@@ -24,7 +23,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-config.set_main_option("sqlalchemy.url", str(POSTGRES_DSN))
+config.set_main_option("sqlalchemy.url", get_database_dsn())
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

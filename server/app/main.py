@@ -10,7 +10,7 @@ from aiohttp.web import Application
 from aiojobs.aiohttp import setup as aiojobs_setup
 
 from app import config
-from app.db import db
+from app.db import db, get_database_dsn
 from app.middlewares import auth_middleware, body_validator_middleware, error_middleware
 from app.api.index import internal_routes
 from app.api.budget import budget_routes
@@ -27,7 +27,7 @@ LOG_FORMAT = "%(asctime)s - %(levelname)s: %(name)s: %(message)s"
 
 async def init_config(app):
     """Initialize aiohttp application with required constants."""
-    if config.SERVER_MODE == "dev":
+    if config.SERVER_MODE == "DEV":
         response = requests.get("http://ngrok:4040/api/tunnels").json()
         _, http = response["tunnels"]
         ngrok_domain = http["public_url"]
@@ -49,9 +49,9 @@ def init_logging():
     # in order to set echo pass echo=True to db config dict
     logging.getLogger("gino.engine._SAEngine").propagate = False
 
-    log_dir = os.environ.get("LOG_DIR")
-    log_filepath = f'{log_dir}/server.log'
-    if log_dir and os.path.isfile(log_filepath) and os.access(log_filepath, os.W_OK):
+    log_dir = os.getenv("LOG_DIR")
+    log_filepath = f"{log_dir}/server.log"
+    if log_dir and os.path.isdir(log_dir) and os.access(log_dir, os.W_OK):
         formatter = logging.Formatter(LOG_FORMAT)
         file_handler = logging.FileHandler(log_filepath)
         file_handler.setLevel(logging.INFO)
@@ -59,22 +59,26 @@ def init_logging():
         logging.getLogger("").addHandler(file_handler)
 
 
-def init_app():
-    """Prepare aiohttp web server for further running."""
-    app = Application()
-
-    init_logging()
-
+def init_db(app):
+    """Initialize database postgres connection based on server mode."""
     db.init_app(
         app,
         dict(
-            dsn=config.POSTGRES_DSN,
+            dsn=get_database_dsn(),
             min_size=config.POSTGRES_POOL_MIN_SIZE,
             max_size=config.POSTGRES_POOL_MAX_SIZE,
             retry_limit=config.POSTGRES_RETRY_LIMIT,
             retry_interval=config.POSTGRES_RETRY_INTERVAL
         ),
     )
+
+
+def init_app():
+    """Prepare aiohttp web server for further running."""
+    app = Application()
+
+    init_logging()
+    init_db(app)
 
     aiojobs_setup(app)
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader(config.TEMPLATES_DIR))
