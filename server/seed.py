@@ -4,13 +4,13 @@ import asyncio
 
 import gino
 
-from app.config import POSTGRES_DSN
+from app.db import get_database_dsn
 from migrations.data import insert_mcc_categories, insert_mccs
 
 
 async def _get_db_connection():
     """Return gino db connection."""
-    return await gino.Gino(POSTGRES_DSN)
+    return await gino.Gino(get_database_dsn())
 
 
 async def seed_db():

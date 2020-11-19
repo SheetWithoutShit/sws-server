@@ -68,3 +68,6 @@ venv.bak/
 
 # IDEA
 .idea/
+
+# Logs
+*.log
