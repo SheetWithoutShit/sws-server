@@ -1,7 +1,8 @@
 """This module provides functionality for database interactions."""
 
-from app import config
 from gino.ext.aiohttp import Gino
+
+from app import config
 
 
 db = Gino()

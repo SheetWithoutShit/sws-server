@@ -23,7 +23,10 @@ jobs:
       provider: heroku
       app: spentless
       api_key: $HEROKU_TOKEN
+      on:
+        branch: staging
 
 branches:
   only:
   - master
+  - staging
