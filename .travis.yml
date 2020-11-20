@@ -9,11 +9,13 @@ jobs:
     install: pip install -r requirements.txt
     script:
       - pylint --rcfile=.pylintrc ./server/ --init-hook='sys.path.extend(["./server/"])'
+
   - stage: "Production Deploy"
     if: branch = master AND type = push
     before_script: chmod +x ci/aws_deploy.sh
     script:
       - ci/aws_deploy.sh
+
   - stage: "Staging Deploy"
     if: branch = staging AND type = push
     script: skip
