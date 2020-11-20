@@ -135,7 +135,9 @@ disable=print-statement,
         deprecated-sys-function,
         exception-escape,
         comprehension-escape,
-        too-many-instance-attributes
+        too-many-instance-attributes,
+        raise-missing-from,
+        no-name-in-module
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -417,7 +419,7 @@ ignored-classes=optparse.Values,thread._local,_thread._local, PostgresError,
 # (useful for modules/projects where namespaces are manipulated during runtime
 # and thus existing member attributes cannot be deduced by static analysis. It
 # supports qualified module names, as well as Unix pattern matching.
-ignored-modules=
+ignored-modules=gino
 
 # Show a hint with possible names when a member name was not found. The aspect
 # of finding the hint is based on edit distance.
