@@ -46,7 +46,7 @@ POSTGRES_DSN_DEV = URL(
 )
 
 # REDIS stuff
-REDIS_URL = os.getenv("REDIS_URL", "localhost:6379")
+REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379")
 
 # Telegram stuff
 TELEGRAM_BOT_NAME = "SpentlessBot"
