@@ -6,7 +6,9 @@ cache: pip
 jobs:
   include:
   - stage: "Lint&UnitTests"
-    install: pip install -r requirements.txt
+    install:
+      - pip install -r requirements.txt
+      - pip install -r requirements-dev.txt
     script:
       - pylint --rcfile=.pylintrc ./server/ --init-hook='sys.path.extend(["./server/"])'
 

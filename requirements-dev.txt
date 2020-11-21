@@ -1,0 +1,3 @@
+pylint==2.6.0
+aiohttp-devtools==0.13.1
+devtools==0.6.1
