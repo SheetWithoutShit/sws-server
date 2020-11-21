@@ -1,36 +1,48 @@
 <html>
     <head>
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;600&display=swap" rel="stylesheet">
         <style>
             body {
-                background: linear-gradient(162.44deg, #EAF3E8 0%, #B8D8D1 100%);
-                display: flex;
-                justify-content: center;
+                font-family: "Cairo", sans-serif;
+                color: #444444
             }
-            .email {
-                background-color: white;
-                min-width: 300px;
-                height: 375px;
-                padding: 10px 40px;
+
+            #email-header {
+                font-size: 32px;
+                font-weight: bold;
+                color: #D9BB6E;
             }
-            .email-header {
-                color: #209F85;
+            #email-header > hr {
+                border: 1px solid #D9BB6E;
             }
-            hr {
-                border: 0.3px solid lightgray;  
+
+            #email-title {
+                font-weight: bold;
+                font-size: 20px;
+                margin-bottom: 10px;
+            }
+
+            #email-body {
+                font-size: 16px;
+            }
+            #email-body > span {
+                font-weight: bold;
             }
         </style>
     </head>
     <body>
         <div class="email">
-            <h1 class="email-header">Spentless</h1><hr>
-            <p>Congratulations!</p>
-            <p>You have successfully signed up.</p>
-            <p>We are happy to see you as a member of Spentless application.</p>
-            <p>Our system will help you to save your costs and control all your transactions.<p/>
-            <p>Also, we have a lot of other interesting features.</p>
-            <p>You may want to activate monobank and telegram notifications</p>
-            <p>More detailed information you can found in the application.</p>
-            <p>Do not waste time - let's configure your budget!</p>
+            <div id="email-header">Spentless<hr/></div>
+            <div id="email-title">Congratulations!</div>
+            <div id="email-body">
+                You have successfully signed up.
+                We are happy to see you as a member of Spentless application.
+                Our system will help you to save your costs and control all your transactions.
+                Also, we have a lot of other interesting features.
+                You may want to activate monobank and telegram notifications.
+                More detailed information you can found in the application.
+                Do not waste time - let's configure your budget!
         </div>
     </body>
 </html>
