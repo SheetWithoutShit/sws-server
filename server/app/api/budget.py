@@ -13,7 +13,7 @@ from app.utils.validators import validate_budget_savings, validate_budget_income
 budget_routes = web.RouteTableDef()
 
 
-@budget_routes.view("/budget")
+@budget_routes.view("/v1/budget")
 class UserProfileBudgetView(web.View):
     """Views to interact with user`s profile budget data."""
 

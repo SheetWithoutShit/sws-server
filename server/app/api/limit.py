@@ -14,7 +14,7 @@ from app.utils.validators import validate_limit_amount
 limit_routes = web.RouteTableDef()
 
 
-@limit_routes.view("/limits/categories")
+@limit_routes.view("/v1/limits/categories")
 class BudgetLimitCategoriesView(web.View):
     """Views to interact with limit categories."""
 
@@ -36,7 +36,7 @@ class BudgetLimitCategoriesView(web.View):
         )
 
 
-@limit_routes.view("/limits")
+@limit_routes.view("/v1/limits")
 class BudgetLimitsView(web.View):
     """Views to interact with budget limits."""
 
@@ -105,7 +105,7 @@ class BudgetLimitsView(web.View):
         )
 
 
-@limit_routes.view(r"/limits/{limit_id:\d+}")
+@limit_routes.view(r"/v1/limits/{limit_id:\d+}")
 class LimitView(web.View):
     """Views to interact with user's budget limit."""
 
