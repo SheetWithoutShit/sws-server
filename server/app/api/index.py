@@ -10,7 +10,7 @@ from app.utils.response import make_response
 internal_routes = web.RouteTableDef()
 
 
-@internal_routes.get("/health")
+@internal_routes.get("/v1/health")
 async def health_view(request):
     """Return health OK http status."""
     return make_response(

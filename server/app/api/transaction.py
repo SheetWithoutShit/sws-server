@@ -14,7 +14,7 @@ from app.utils.time import DATETIME_FORMAT, DATE_FORMAT, generate_days_period
 transaction_routes = web.RouteTableDef()
 
 
-@transaction_routes.view("/transactions")
+@transaction_routes.view("/v1/transactions")
 class TransactionsView(web.View):
     """Views to interact with user`s transactions."""
 
@@ -51,7 +51,7 @@ class TransactionsView(web.View):
         )
 
 
-@transaction_routes.view("/transactions/report/month")
+@transaction_routes.view("/v1/transactions/report/month")
 class TransactionMonthReportView(web.View):
     """Views to interact with month transaction report."""
 
@@ -91,7 +91,7 @@ class TransactionMonthReportView(web.View):
         )
 
 
-@transaction_routes.view("/transactions/report/daily")
+@transaction_routes.view("/v1/transactions/report/daily")
 class TransactionDailyReportView(web.View):
     """Views to interact with daily transaction reports."""
 

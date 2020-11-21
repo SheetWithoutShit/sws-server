@@ -26,7 +26,7 @@ from app.utils.mail import send_reset_password_mail, send_change_email_mail, sen
 auth_routes = web.RouteTableDef()
 
 
-@auth_routes.view("/auth/signup")
+@auth_routes.view("/v1/auth/signup")
 class AuthSignUp(web.View):
     """Class that includes functionality to sign up user in system."""
 
@@ -71,7 +71,7 @@ class AuthSignUp(web.View):
         )
 
 
-@auth_routes.view("/auth/signin")
+@auth_routes.view("/v1/auth/signin")
 class AuthSignIn(web.View):
     """Class that includes functionality to sign in user in system."""
 
@@ -129,7 +129,7 @@ class AuthSignIn(web.View):
         )
 
 
-@auth_routes.view("/auth/refresh_access")
+@auth_routes.view("/v1/auth/refresh_access")
 class AuthRefreshAccess(web.View):
     """Class that includes functionality to refresh access token for user."""
 
@@ -180,7 +180,7 @@ class AuthRefreshAccess(web.View):
         )
 
 
-@auth_routes.view("/auth/change_password")
+@auth_routes.view("/v1/auth/change_password")
 class AuthChangePasswordView(web.View):
     """Class that includes functionality to work with user password in system."""
 
@@ -238,7 +238,7 @@ class AuthChangePasswordView(web.View):
         )
 
 
-@auth_routes.view("/auth/reset_password")
+@auth_routes.view("/v1/auth/reset_password")
 class AuthResetPasswordView(web.View):
     """Class that includes functionality for user password resetting."""
 
@@ -344,7 +344,7 @@ class AuthResetPasswordView(web.View):
         )
 
 
-@auth_routes.view("/auth/change_email")
+@auth_routes.view("/v1/auth/change_email")
 class AuthChangeEmailView(web.View):
     """Class that includes functionality to change user email."""
 
@@ -402,7 +402,7 @@ class AuthChangeEmailView(web.View):
         )
 
 
-@auth_routes.view("/auth/change_email/confirm")
+@auth_routes.view("/v1/auth/change_email/confirm")
 class AuthChangeEmailConfirmView(web.View):
     """Class that includes functionality to confirm user email changing."""
 

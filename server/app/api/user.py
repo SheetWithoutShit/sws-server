@@ -16,7 +16,7 @@ from app.utils.monobank import setup_webhook, save_user_monobank_info, save_mono
 user_routes = web.RouteTableDef()
 
 
-@user_routes.view("/user")
+@user_routes.view("/v1/user")
 class UserView(web.View):
     """Class that includes functionality to work with user data in system."""
 
@@ -55,7 +55,7 @@ class UserView(web.View):
         )
 
 
-@user_routes.view("/user/telegram")
+@user_routes.view("/v1/user/telegram")
 class UserTelegramView(web.View):
     """Class that includes functionality to work with user telegram chat."""
 
@@ -77,7 +77,7 @@ class UserTelegramView(web.View):
         )
 
 
-@user_routes.view("/user/monobank")
+@user_routes.view("/v1/user/monobank")
 class UserMonobankView(web.View):
     """Class that includes functionality to work with monobank token."""
 
