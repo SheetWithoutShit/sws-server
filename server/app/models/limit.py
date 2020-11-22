@@ -52,7 +52,7 @@ class Limit(db.Model, BaseModelMixin):
             limits = await db \
                 .select([
                     cls.id,
-                    cast(cls.amount, db.String).label("amount"),
+                    cast(cls.amount, db.String).label("balance"),
                     MCCCategory.name,
                     MCCCategory.info,
                 ]) \
