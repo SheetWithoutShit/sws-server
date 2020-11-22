@@ -11,12 +11,12 @@ from app.utils.jwt import decode_token
 
 
 SAFE_ROUTES = (
-    "/health",
-    "/auth/signup",
-    "/auth/signin",
-    "/auth/refresh_access",
-    "/auth/reset_password",
-    "/auth/change_email/confirm"
+    "/v1/health",
+    "/v1/auth/signup",
+    "/v1/auth/signin",
+    "/v1/auth/refresh_access",
+    "/v1/auth/reset_password",
+    "/v1/auth/change_email/confirm"
 )
 
 
