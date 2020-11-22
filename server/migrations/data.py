@@ -2,21 +2,23 @@ insert_mcc_categories = """
 INSERT INTO mcc_category (id, name, info)
 VALUES
     (-1, 'Other', 'Other expenses'),
-    (1, 'Travel', 'Flights, train tickets, car rentals, hotels and much more for your vacation'),
-    (2, 'Beauty & Medicine', 'Goods and services in massage or beauty salons, and pharmacies'),
-    (3, 'Entertainment & Sports', 'Goods and services in the field of entertainment and sports'),
-    (4, 'Cafes & Restaurants', 'Goods and services in restaurants, cafes, bars, etc'),
-    (5, 'Products & Supermarkets', 'Goods and services in supermarkets and specialty stores selling food and beverages'),
-    (6, 'Cinema', 'Cinema services and goods, rent and purchase of goods in related stores'),
-    (7, 'Cars & Gas Stations', 'Auto parts, various types of car services and service stations, car washes, oil products, gas and other related goods and services purchased at gas stations or specialty stores'),
-    (8, 'Clothes & Shoes', 'Goods and services in specialized shops of clothes, footwear'),
-    (9, 'Taxi', 'Taxi services'),
-    (10, 'Animals', 'Goods and services in pet stores and veterinary clinics'),
-    (11, 'Books', 'Goods and services in bookstores and newsstands'),
-    (12, 'Flowers', 'Goods and services in flower shops, florist shops and related stores'),
-    (13, 'Household Appliances', 'Goods of household appliance in specialized shops'),
+    (1, 'Travel', 'Flights, train tickets, car rentals, hotels and much more for your vacation.'),
+    (2, 'Beauty & Medicine', 'Goods and services in massage or beauty salons, and pharmacies.'),
+    (3, 'Entertainment & Sports', 'Goods and services in the field of entertainment and sports.'),
+    (4, 'Cafes & Restaurants', 'Goods and services in restaurants, cafes, bars, etc.'),
+    (5, 'Products & Supermarkets', 'Goods and services in supermarkets and specialty stores selling food and beverages.'),
+    (6, 'Cinema', 'Cinema services and goods, rent and purchase of goods in related stores.'),
+    (7, 'Cars & Gas Stations', 'Auto parts, various types of car services and service stations, car washes, oil products, gas and other related goods and services purchased at gas stations or specialty stores.'),
+    (8, 'Clothes & Shoes', 'Goods and services in specialized shops of clothes, accessories, footwear.'),
+    (9, 'Taxi', 'Taxi services.'),
+    (10, 'Animals', 'Goods and services in pet stores and veterinary clinics.'),
+    (11, 'Books', 'Goods and services in bookstores and newsstands.'),
+    (12, 'Flowers', 'Goods and services in flower shops, florist shops and related stores.'),
+    (13, 'Household Appliances', 'Goods of household appliance in specialized shops.'),
     (14, 'Gas Stations', 'Diesel fuel, gasoline, gas fuel at a gas station.'),
-    (15, 'Fast Food', 'Shopping in fast food restaurants such as McDonald`s, KFC, etc');
+    (15, 'Fast Food', 'Shopping in fast food restaurants such as McDonald`s, KFC, etc.'),
+    (16, 'Card transfers', 'Money transfers between accounts.'),
+    (17, 'Communal services', 'Electric, gas, sanitary and water utilities');
 """
 
 insert_mccs = """
@@ -139,6 +141,7 @@ values
     
     (5131, 8), (5137, 8), (5139, 8), (5611, 8), (5621, 8), (5631, 8), (5641, 8), (5651, 8), (5655, 8), (5661, 8),
     (5681, 8), (5691, 8), (5697, 8), (5698, 8), (5699, 8), (5931, 8), (5948, 8), (5949, 8), (7251, 8), (7296, 8),
+    (5944, 8),
     
     (4121, 9),
     
@@ -152,5 +155,9 @@ values
     
     (5172, 14), (5541, 14), (5542, 14), (5983, 14),
     
-    (5814, 15);
+    (5814, 15),
+
+    (4829, 16), (6536, 16),
+
+    (4900, 17);
 """

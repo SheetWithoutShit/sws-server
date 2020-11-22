@@ -80,7 +80,7 @@ async def save_monobank_month_transactions(user_id, user_monobank_token):
 
         mcc_code = transaction["mcc"]
         if mcc_code not in mccs:
-            LOGGER.error("Could not find MCC code=%s in database.", mcc_code)
+            LOGGER.error("Could not find MCC code=%s in database. Transaction: %s", mcc_code, transaction)
             mcc_code = -1
 
         return {
