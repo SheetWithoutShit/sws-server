@@ -1,11 +1,13 @@
 """This module provides limit views."""
 
 from http import HTTPStatus
+from datetime import datetime
 
 from aiohttp import web
 
 from app.models.limit import Limit
 from app.models.mcc import MCCCategory
+from app.models.transaction import Transaction
 from app.utils.response import make_response
 from app.utils.errors import DatabaseError
 from app.utils.validators import validate_limit_amount
@@ -42,14 +44,23 @@ class BudgetLimitsView(web.View):
 
     async def get(self):
         """Retrieve user`s budget limits."""
+        today = datetime.today()
+        year, month = today.year, today.month
+
         try:
             limits = await Limit.get_user_limits(self.request.user_id)
+            spendings = await Transaction.get_month_report(self.request.user_id, year, month)
         except DatabaseError as err:
             return make_response(
                 success=False,
                 message=str(err),
                 http_status=HTTPStatus.BAD_REQUEST
             )
+
+        # set spent amount for each limit
+        for limit in limits:
+            spending = next((item for item in spendings if item["name"] == limit["name"]), {})
+            limit["spent"] = spending.get("amount", "0.0")
 
         return make_response(
             success=True,
