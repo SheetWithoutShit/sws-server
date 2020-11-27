@@ -13,3 +13,7 @@ The main API server includes:
 
 # How to run?
 Follow the instruction placed in [spentless-infrastructure](https://github.com/SpentlessInc/spentless-infrastructure).
+
+# Scripts
+* cache_cleanup.py - clean up cache item by keys. Example: `python cache_cleanup.py mcc_codes test_key another key`
+* database_seed.py - seed database data. Example: `python seed.py`
