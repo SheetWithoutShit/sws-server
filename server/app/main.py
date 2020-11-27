@@ -93,12 +93,12 @@ def init_app():
     app.on_startup.append(init_config)
 
     app.middlewares.append(db)
-    app.middlewares.append(body_validator_middleware)
-    app.middlewares.append(auth_middleware)
     app.middlewares.append(error_middleware({
         404: handle_404,
         405: handle_405,
         500: handle_500
     }))
+    app.middlewares.append(body_validator_middleware)
+    app.middlewares.append(auth_middleware)
 
     return app

@@ -9,7 +9,7 @@ from app.utils.response import make_response
 from app.utils.errors import TokenError
 from app.utils.jwt import decode_token
 
-
+HTTP_404_HANDLER = "SystemRoute 404: Not Found"
 SAFE_ROUTES = (
     "/v1/health",
     "/v1/auth/signup",
@@ -27,6 +27,9 @@ def error_middleware(error_handlers):
     async def error_middleware_inner(request, handler):
         """Handle specific http errors using custom views."""
         try:
+            if HTTP_404_HANDLER in str(handler.keywords["handler"]):
+                raise web.HTTPNotFound
+
             return await handler(request)
         except web.HTTPException as ex:
             error_handler = error_handlers.get(ex.status)
