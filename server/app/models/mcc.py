@@ -45,7 +45,7 @@ class MCCCategory(db.Model, BaseModelMixin):
     __tablename__ = "mcc_category"
 
     id = db.Column(db.SmallInteger, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(255), nullable=False)
+    name = db.Column(db.String(255), unique=True, nullable=False)
     info = db.Column(db.String(255), nullable=False, default="")
 
     mccs = relationship("mcc", back_populates="category")

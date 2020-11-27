@@ -23,7 +23,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-config.set_main_option("sqlalchemy.url", get_database_dsn())
+config.set_main_option("sqlalchemy.url", str(get_database_dsn()))
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
