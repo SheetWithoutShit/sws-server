@@ -8,6 +8,7 @@ import aiohttp_jinja2
 import requests
 from aiohttp.web import Application
 from aiojobs.aiohttp import setup as aiojobs_setup
+from aiohttp_swagger import setup_swagger
 
 from app import config
 from app.db import db, get_database_dsn
@@ -73,12 +74,23 @@ def init_db(app):
     )
 
 
+def init_swagger(app):
+    """Initialize swagger documentation for the server application."""
+    swagger_path = os.path.join(config.ROOT_DIR, "swagger.yaml")
+    setup_swagger(
+        app,
+        swagger_url="/v1/api",
+        swagger_from_file=swagger_path
+    )
+
+
 def init_app():
     """Prepare aiohttp web server for further running."""
     app = Application()
 
     init_logging()
     init_db(app)
+    init_swagger(app)
 
     aiojobs_setup(app)
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader(config.TEMPLATES_DIR))

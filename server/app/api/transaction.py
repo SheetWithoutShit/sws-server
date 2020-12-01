@@ -31,7 +31,7 @@ class TransactionsView(web.View):
                 success=False,
                 message="Wrong input. Query arguments start_date or end_date is not correct. "
                         f"Expected strings: {DATETIME_FORMAT}.",
-                http_status=HTTPStatus.BAD_REQUEST
+                http_status=HTTPStatus.UNPROCESSABLE_ENTITY
             )
 
         try:
@@ -43,7 +43,7 @@ class TransactionsView(web.View):
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
-        response_data = {"transactions": [transaction.as_dict() for transaction in result]}
+        response_data = [transaction.as_dict() for transaction in result]
         return make_response(
             success=True,
             data=response_data,
@@ -67,11 +67,11 @@ class TransactionMonthReportView(web.View):
             return make_response(
                 success=False,
                 message="Wrong input. Required query arguments year or month is not correct.",
-                http_status=HTTPStatus.BAD_REQUEST
+                http_status=HTTPStatus.UNPROCESSABLE_ENTITY
             )
 
         try:
-            reports = await Transaction.get_month_report(self.request.user_id, year, month)
+            categories_reports = await Transaction.get_month_report(self.request.user_id, year, month)
         except DatabaseError as err:
             return make_response(
                 success=False,
@@ -80,7 +80,7 @@ class TransactionMonthReportView(web.View):
             )
 
         response_data = {
-            "reports": reports,
+            "categories": categories_reports,
             "year": year,
             "month": month
         }
@@ -107,7 +107,7 @@ class TransactionDailyReportView(web.View):
             return make_response(
                 success=False,
                 message="Wrong input. Query arguments start_date or end_date is not correct.",
-                http_status=HTTPStatus.BAD_REQUEST
+                http_status=HTTPStatus.UNPROCESSABLE_ENTITY
             )
 
         try:
@@ -127,6 +127,6 @@ class TransactionDailyReportView(web.View):
 
         return make_response(
             success=True,
-            data={"daily_budget": response_data},
+            data=response_data,
             http_status=HTTPStatus.OK,
         )
