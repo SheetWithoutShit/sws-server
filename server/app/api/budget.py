@@ -43,7 +43,7 @@ class UserProfileBudgetView(web.View):
         if validation_errors:
             return make_response(
                 success=False,
-                message=f"Wrong input: {' '.join(validation_errors)}",
+                message=' '.join(validation_errors),
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
@@ -58,6 +58,6 @@ class UserProfileBudgetView(web.View):
 
         return make_response(
             success=True,
-            message="Success. The user`s budget was updated.",
+            message="The user`s budget was updated.",
             http_status=HTTPStatus.OK
         )

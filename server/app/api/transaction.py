@@ -29,7 +29,7 @@ class TransactionsView(web.View):
         except (TypeError, ValueError):
             return make_response(
                 success=False,
-                message="Wrong input. Query arguments start_date or end_date is not correct. "
+                message="Query arguments start_date or end_date is not correct. "
                         f"Expected strings: {DATETIME_FORMAT}.",
                 http_status=HTTPStatus.UNPROCESSABLE_ENTITY
             )
@@ -66,7 +66,7 @@ class TransactionMonthReportView(web.View):
         except (TypeError, ValueError):
             return make_response(
                 success=False,
-                message="Wrong input. Required query arguments year or month is not correct.",
+                message="Required query arguments year or month is not correct.",
                 http_status=HTTPStatus.UNPROCESSABLE_ENTITY
             )
 
@@ -106,7 +106,7 @@ class TransactionDailyReportView(web.View):
         except (TypeError, ValueError):
             return make_response(
                 success=False,
-                message="Wrong input. Query arguments start_date or end_date is not correct.",
+                message="Query arguments start_date or end_date is not correct.",
                 http_status=HTTPStatus.UNPROCESSABLE_ENTITY
             )
 
