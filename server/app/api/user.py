@@ -71,7 +71,7 @@ class UserTelegramView(web.View):
         response_data = {"invitation_link": telegram_invitation_link}
         return make_response(
             success=True,
-            message="Success. The invitation link to telegram bot was created.",
+            message="The invitation link to telegram bot was created.",
             data=response_data,
             http_status=HTTPStatus.OK,
         )
@@ -92,7 +92,7 @@ class UserMonobankView(web.View):
         except KeyError:
             return make_response(
                 success=False,
-                message="Wrong input. Required field token is not provided.",
+                message="Required field token is not provided.",
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
@@ -105,7 +105,7 @@ class UserMonobankView(web.View):
         if status != 200:
             return make_response(
                 success=False,
-                message="Wrong input. Required field token is not correct.",
+                message="The provided token is not correct.",
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
@@ -114,6 +114,6 @@ class UserMonobankView(web.View):
 
         return make_response(
             success=True,
-            message="Success. The monobank token was applied.",
+            message="The monobank token was successfully applied.",
             http_status=HTTPStatus.OK,
         )

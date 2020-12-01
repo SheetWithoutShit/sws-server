@@ -65,7 +65,7 @@ class AuthSignUp(web.View):
         response_data = {"id": user.id, "email": user.email}
         return make_response(
             success=True,
-            message="The user was created.",
+            message="The user was successfully created.",
             data=response_data,
             http_status=HTTPStatus.CREATED,
         )
@@ -102,7 +102,7 @@ class AuthSignIn(web.View):
         if not is_correct:
             return make_response(
                 success=False,
-                message=f"The provided password for user {email} is not correct.",
+                message="The provided password for such user is not correct.",
                 http_status=HTTPStatus.UNAUTHORIZED
             )
 
@@ -123,7 +123,7 @@ class AuthSignIn(web.View):
         }
         return make_response(
             success=True,
-            message="The user was authorized.",
+            message="The user was successfully authorized.",
             data=response_data,
             http_status=HTTPStatus.OK,
         )
@@ -174,7 +174,7 @@ class AuthRefreshAccess(web.View):
         }
         return make_response(
             success=True,
-            message="The access token was refreshed.",
+            message="The access token was successfully refreshed.",
             data=response_data,
             http_status=HTTPStatus.OK,
         )
@@ -233,7 +233,7 @@ class AuthChangePasswordView(web.View):
 
         return make_response(
             success=True,
-            message="The user password was changed.",
+            message="The user password was successfully changed.",
             http_status=HTTPStatus.OK,
         )
 
@@ -339,7 +339,7 @@ class AuthResetPasswordView(web.View):
 
         return make_response(
             success=True,
-            message="The user password was changed.",
+            message="The user password was successfully changed.",
             http_status=HTTPStatus.OK,
         )
 

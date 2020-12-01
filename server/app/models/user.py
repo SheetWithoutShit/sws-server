@@ -64,10 +64,10 @@ class User(db.Model, BaseModelMixin):
             user = await cls.get(user_id)
         except SQLAlchemyError as err:
             LOGGER.error("Could not retrieve user=%s. Error: %s", user_id, err)
-            raise DatabaseError(f"Failed to retrieve user={user_id}")
+            raise DatabaseError("Failed to retrieve requested user.")
 
         if not user:
-            raise DatabaseError(f"The user={user_id} does not exist.")
+            raise DatabaseError("The user does not exist.")
 
         return user
 
@@ -81,7 +81,7 @@ class User(db.Model, BaseModelMixin):
             raise DatabaseError(f"Failed to retrieve user={email}")
 
         if not user:
-            raise DatabaseError(f"The user={email} does not exist.")
+            raise DatabaseError("The user does not exist.")
 
         return user
 
@@ -91,7 +91,7 @@ class User(db.Model, BaseModelMixin):
         try:
             return await super().create(email=email, password=password)
         except exceptions.UniqueViolationError:
-            raise DatabaseError(f"A user with email={email} already exists.")
+            raise DatabaseError("A user with such email already exists.")
         except SQLAlchemyError as err:
             LOGGER.error("Could not create user=%s. Error: %s", email, err)
             raise DatabaseError("Failed to create a new user in database.")
@@ -106,11 +106,11 @@ class User(db.Model, BaseModelMixin):
                 .gino.status()
         except SQLAlchemyError as err:
             LOGGER.error("Could not update user=%s. Error: %s", user_id, err)
-            raise DatabaseError(f"Failed to update user={user_id}")
+            raise DatabaseError("Failed to update requested user")
 
         updated = parse_status(status)
         if not updated:
-            raise DatabaseError(f"The user={user_id} was not updated.")
+            raise DatabaseError("The user was not updated.")
 
     @classmethod
     async def delete(cls, user_id):
@@ -119,8 +119,8 @@ class User(db.Model, BaseModelMixin):
             status, _ = await super().delete.where(cls.id == user_id).gino.status()
         except SQLAlchemyError as err:
             LOGGER.error("Could not delete user=%s. Error: %s", user_id, err)
-            raise DatabaseError(f"Failed to delete user={user_id}")
+            raise DatabaseError("Failed to delete requested user")
 
         deleted = parse_status(status)
         if not deleted:
-            raise DatabaseError(f"The user={user_id} was not deleted.")
+            raise DatabaseError("The user was not deleted.")

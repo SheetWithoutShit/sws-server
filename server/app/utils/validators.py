@@ -53,8 +53,8 @@ def validate_budget_income(income):
         errors.append("Income can not be empty.")
         return errors
 
-    if not isinstance(income, float):
-        errors.append("Income must be float type.")
+    if not isinstance(income, float) and not isinstance(income, int):
+        errors.append("Income must be float or integer type.")
         return errors
 
     if income < 0:
@@ -83,8 +83,8 @@ def validate_budget_savings(savings):
 def validate_limit_amount(amount):
     """Validate limit amount value."""
     errors = []
-    if not isinstance(amount, float):
-        errors.append("Amount must be float type.")
+    if not isinstance(amount, float) and not isinstance(amount, int):
+        errors.append("Amount must be float or integer type.")
         return errors
 
     if amount <= 0:

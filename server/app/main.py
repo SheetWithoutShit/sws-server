@@ -80,6 +80,7 @@ def init_swagger(app):
     setup_swagger(
         app,
         swagger_url="/v1/api",
+        ui_version=2,
         swagger_from_file=swagger_path
     )
 

@@ -34,7 +34,7 @@ class Budget(db.Model, BaseModelMixin):
                 .gino.first()
         except SQLAlchemyError as err:
             LOGGER.error("Could not retrieve budget for user=%s. Error: %s", user_id, err)
-            raise DatabaseError(f"Failed to retrieve budget for user={user_id}.")
+            raise DatabaseError("Failed to retrieve budget for requested user.")
 
         return budget
 
@@ -48,8 +48,8 @@ class Budget(db.Model, BaseModelMixin):
                 .gino.status()
         except SQLAlchemyError as err:
             LOGGER.error("Could not update budget for user=%s. Error: %s", user_id, err)
-            raise DatabaseError(f"Failed to update budget for user={user_id}.")
+            raise DatabaseError("Failed to update budget for requested user.")
 
         updated = parse_status(status)
         if not updated:
-            raise DatabaseError("The user`s budget was not updated.")
+            raise DatabaseError("The requested user`s budget was not updated.")

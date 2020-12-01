@@ -32,16 +32,16 @@ class Limit(db.Model, BaseModelMixin):
     _limit_user_idx = db.Index("limit_user_idx", "user_id")
 
     @classmethod
-    async def get(cls, limit_id):
+    async def get_by_id(cls, limit_id):
         """Return queried budget limit by provided id."""
         try:
             limit = await super().get(limit_id)
         except SQLAlchemyError as err:
             LOGGER.error("Could not retrieve budget limit by id=%s. Error: %s", limit_id, err)
-            raise DatabaseError(f"Failed to retrieve budget limit={limit_id}.")
+            raise DatabaseError("Failed to retrieve requested budget limit.")
 
         if not limit:
-            raise DatabaseError(f"The budget limit with id={limit_id} does not exist.")
+            raise DatabaseError("The requested budget limit does not exist.")
 
         return limit
 
@@ -62,7 +62,7 @@ class Limit(db.Model, BaseModelMixin):
 
         except SQLAlchemyError as err:
             LOGGER.error("Could not retrieve budget limits for user=%s. Error: %s", user_id, err)
-            raise DatabaseError(f"Failed to retrieve budget limits for user={user_id}.")
+            raise DatabaseError("Failed to retrieve budget limits for requested user.")
 
         return [dict(limit) for limit in limits]
 
@@ -72,10 +72,10 @@ class Limit(db.Model, BaseModelMixin):
         try:
             return await super().create(user_id=user_id, category_id=category_id, amount=amount)
         except exceptions.UniqueViolationError:
-            raise DatabaseError(f"Failure. Limit with that category for user={user_id} already exists.")
+            raise DatabaseError("A limit with such category for requested user already exists.")
         except SQLAlchemyError as err:
             LOGGER.error("Could not create limit with category=%s for user=%s. Error: %s", category_id, user_id, err)
-            raise DatabaseError(f"Failed to create limit budget for user={user_id}.")
+            raise DatabaseError("Failed to create limit budget for requested user.")
 
     @classmethod
     async def update(cls, limit_id, amount):
@@ -87,11 +87,11 @@ class Limit(db.Model, BaseModelMixin):
                 .gino.status()
         except SQLAlchemyError as err:
             LOGGER.error("Could not update budget limit=%s. Error: %s", limit_id, err)
-            raise DatabaseError(f"Failed to update budget limit={limit_id}")
+            raise DatabaseError("Failed to update budget limit.")
 
         updated = parse_status(status)
         if not updated:
-            raise DatabaseError(f"The budget limit={limit_id} was not updated.")
+            raise DatabaseError("The budget limit was not updated.")
 
     @classmethod
     async def delete(cls, limit_id):
@@ -100,8 +100,8 @@ class Limit(db.Model, BaseModelMixin):
             status, _ = await super().delete.where(cls.id == limit_id).gino.status()
         except SQLAlchemyError as err:
             LOGGER.error("Could not delete budget limit by id=%s. Error: %s", limit_id, err)
-            raise DatabaseError(f"Failed to delete budget limit={limit_id}")
+            raise DatabaseError("Failed to delete budget limit.")
 
         deleted = parse_status(status)
         if not deleted:
-            raise DatabaseError(f"The budget category limit={limit_id} was not deleted.")
+            raise DatabaseError("The budget category limit was not deleted.")

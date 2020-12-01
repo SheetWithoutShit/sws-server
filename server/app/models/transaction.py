@@ -42,7 +42,7 @@ class Transaction(db.Model, BaseModelMixin):
             return await super().create(**transaction)
         except exceptions.UniqueViolationError:
             LOGGER.error("A transaction with that id already exists. Transaction: %s", transaction)
-            raise DatabaseError(f"Failure. The transaction={transaction['id']} already exists.")
+            raise DatabaseError("A transaction with such id already exists.")
         except SQLAlchemyError as err:
             LOGGER.error("Could not create transaction. Error: %s", err)
             raise DatabaseError("Failed to create a new transaction in database.")
@@ -57,19 +57,32 @@ class Transaction(db.Model, BaseModelMixin):
                 continue
 
     @classmethod
-    async def filter(cls, user_id, start_date, end_date):
+    async def get_transactions(cls, user_id, start_date, end_date):
         """Retrieve transactions for provided period by user_id."""
         try:
-            transactions = await cls.query \
+            transactions = await db \
+                .select([
+                    cls.id,
+                    cls.user_id,
+                    cast(cls.amount, db.String).label("amount"),
+                    cast(cls.balance, db.String).label("balance"),
+                    cast(cls.cashback, db.String).label("cashback"),
+                    func.to_char(cls.timestamp, "YYYY.MM.DD HH24:MI:SS").label("timestamp"),
+                    cls.mcc,
+                    cls.info,
+                    MCCCategory.name.label("category_name")
+                ]) \
+                .select_from(cls.join(MCC.join(MCCCategory))) \
                 .where(
                     (cls.user_id == user_id) &
-                    between(cls.timestamp, start_date, end_date)) \
+                    between(cls.timestamp, start_date, end_date)
+                ) \
                 .gino.all()
         except SQLAlchemyError as err:
             LOGGER.error("Could not retrieve transactions for user=%s. Error: %s", user_id, err)
-            raise DatabaseError(f"Failed to retrieve transactions for user={user_id}.")
+            raise DatabaseError("Failed to retrieve transactions for requested user")
 
-        return transactions
+        return [dict(item) for item in transactions]
 
     @classmethod
     async def _get_month_report(cls, user_id, year, month):
@@ -92,7 +105,7 @@ class Transaction(db.Model, BaseModelMixin):
                 .gino.all()
         except SQLAlchemyError as err:
             LOGGER.error("Could not retrieve month transaction report for user=%s. Error: %s", user_id, err)
-            raise DatabaseError(f"Failed to retrieve monthly ({month}.{year}) report for user={user_id}")
+            raise DatabaseError("Failed to retrieve monthly report for requested user.")
 
         return [dict(item) for item in reports]
 
@@ -134,6 +147,6 @@ class Transaction(db.Model, BaseModelMixin):
                 .gino.all()
         except SQLAlchemyError as err:
             LOGGER.error("Could not retrieve daily transactions reports for user=%s. Error: %s", user_id, err)
-            raise DatabaseError(f"Failed to retrieve daily transactions reports for user={user_id}.")
+            raise DatabaseError("Failed to retrieve daily transactions reports for requested user.")
 
         return reports

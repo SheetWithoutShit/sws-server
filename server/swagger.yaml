@@ -22,7 +22,7 @@ paths:
         200:
           description: The server is up and ready to proccess requests
           schema:
-            $ref: '#/schemas/SuccessResponse'
+            $ref: '#/definitions/SuccessResponse'
 
 
   /auth/signup:
@@ -160,7 +160,7 @@ paths:
         200:
           description: The user password was changed
           schema:
-            $ref: '#/schemas/SuccessResponse'
+            $ref: '#/definitions/SuccessResponse'
         400:
           $ref: '#/responses/BadRequest'
         401:
@@ -203,7 +203,7 @@ paths:
         200:
           description: The user password was changed
           schema:
-            $ref: '#/schemas/SuccessResponse'
+            $ref: '#/definitions/SuccessResponse'
         400:
           $ref: '#/responses/BadRequest'
         422:
@@ -224,7 +224,7 @@ paths:
         200:
           description: Password reset proccess was triggered
           schema:
-            $ref: '#/schemas/SuccessResponse'
+            $ref: '#/definitions/SuccessResponse'
         400:
           $ref: '#/responses/BadRequest'
         422:
@@ -247,7 +247,7 @@ paths:
         200:
           description: Change email proccess was triggered
           schema:
-            $ref: '#/schemas/SuccessResponse'
+            $ref: '#/definitions/SuccessResponse'
         400:
           $ref: '#/responses/BadRequest'
         401:
@@ -328,7 +328,7 @@ paths:
         200:
           description: Budget data was successfully updated
           schema:
-            $ref: '#/schemas/SuccessResponse'
+            $ref: '#/definitions/SuccessResponse'
         400:
           $ref: '#/responses/BadRequest'
         401:
@@ -508,7 +508,7 @@ paths:
         200:
           description: User`s limit were successfully deleted
           schema:
-            $ref: '#/schemas/SuccessResponse'
+            $ref: '#/definitions/SuccessResponse'
         400:
           $ref: '#/responses/BadRequest'
         401:
@@ -567,7 +567,7 @@ paths:
         200:
           description: User was successfully deleted
           schema:
-            $ref: '#/schemas/SuccessResponse'
+            $ref: '#/definitions/SuccessResponse'
         400:
           $ref: '#/responses/BadRequest'
         401:
@@ -615,7 +615,7 @@ paths:
         200:
           description: User monobank token was successfully updated
           schema:
-            $ref: '#/schemas/SuccessResponse'
+            $ref: '#/definitions/SuccessResponse'
         400:
           $ref: '#/responses/BadRequest'
         401:
@@ -669,6 +669,8 @@ paths:
                     timestamp:
                       type: string
                     info:
+                      type: string
+                    name:
                       type: string
         400:
           $ref: '#/responses/BadRequest'
@@ -765,7 +767,7 @@ paths:
         - transaction
 
 
-schemas:
+definitions:
   ErrorResponse:
     type: object
     properties:
@@ -802,16 +804,16 @@ responses:
   BadRequest:
     description: Bad request was received
     schema:
-      $ref: '#/schemas/ErrorResponse'
+      $ref: '#/definitions/ErrorResponse'
   Unauthorized:
     description: The access token was missed or incorrect
     schema:
-      $ref: '#/schemas/ErrorResponse'
+      $ref: '#/definitions/ErrorResponse'
   Forbidden:
     description: Wrong permissions for current user
     schema:
-      $ref: '#/schemas/ErrorResponse'
+      $ref: '#/definitions/ErrorResponse'
   UnprocessableEntity:
     description: Required fields were not provided
     schema:
-      $ref: '#/schemas/ErrorResponse'
+      $ref: '#/definitions/ErrorResponse'

@@ -77,7 +77,7 @@ class BudgetLimitsView(web.View):
         except KeyError:
             return make_response(
                 success=False,
-                message="Wrong input. Required fields category or amount is not provided.",
+                message="Required fields category or amount is not provided.",
                 http_status=HTTPStatus.UNPROCESSABLE_ENTITY
             )
 
@@ -94,7 +94,7 @@ class BudgetLimitsView(web.View):
         if validation_errors:
             return make_response(
                 success=False,
-                message=f"Wrong input: {' '.join(validation_errors)}",
+                message=' '.join(validation_errors),
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
@@ -110,7 +110,7 @@ class BudgetLimitsView(web.View):
         response_data = {"category": category_name, **limit.as_dict()}
         return make_response(
             success=True,
-            message="Success. The budget limit for user was created.",
+            message="The budget limit for user was created.",
             data=response_data,
             http_status=HTTPStatus.OK
         )
@@ -129,7 +129,7 @@ class LimitView(web.View):
         except KeyError:
             return make_response(
                 success=False,
-                message="Wrong input. Required field amount is not provided.",
+                message="Required field amount is not provided.",
                 http_status=HTTPStatus.UNPROCESSABLE_ENTITY
             )
 
@@ -137,7 +137,7 @@ class LimitView(web.View):
         if validation_errors:
             return make_response(
                 success=False,
-                message=f"Wrong input: {' '.join(validation_errors)}",
+                message=' '.join(validation_errors),
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
@@ -154,7 +154,7 @@ class LimitView(web.View):
         if limit.user_id != self.request.user_id:
             return make_response(
                 success=False,
-                message="Forbidden. You don't have permission to edit this limit.",
+                message="You don't have permission to edit this limit.",
                 http_status=HTTPStatus.FORBIDDEN
             )
 
@@ -169,13 +169,30 @@ class LimitView(web.View):
 
         return make_response(
             success=True,
-            message="Success. The user`s budget limit was updated.",
+            message="The user`s budget limit was updated.",
             http_status=HTTPStatus.OK
         )
 
     async def delete(self):
         """Delete user's budget limit."""
         limit_id = int(self.request.match_info["limit_id"])
+
+        try:
+            limit = await Limit.get_by_id(limit_id)
+        except DatabaseError as err:
+            return make_response(
+                success=False,
+                message=str(err),
+                http_status=HTTPStatus.BAD_REQUEST
+            )
+
+        if limit.user_id != self.request.user_id:
+            return make_response(
+                success=False,
+                message="You don't have permission to delete this limit.",
+                http_status=HTTPStatus.FORBIDDEN
+            )
+
         try:
             await Limit.delete(limit_id)
         except DatabaseError as err:
@@ -187,6 +204,6 @@ class LimitView(web.View):
 
         return make_response(
             success=True,
-            message="Success. The user`s budget limit was deleted.",
+            message="The user`s budget limit was deleted.",
             http_status=HTTPStatus.OK
         )

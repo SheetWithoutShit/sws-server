@@ -33,7 +33,7 @@ class MCC(db.Model, BaseModelMixin):
             mcc_codes = [mcc.code for mcc in await cls.query.gino.all()]
         except SQLAlchemyError as err:
             LOGGER.error("Couldn't retrieve all MCC codes. Error: %s", err)
-            raise DatabaseError("Failure. Failed to retrieve all MCC codes.")
+            raise DatabaseError("Failed to retrieve MCC codes.")
         else:
             await cache.set(MCC_CODES_CACHE_KEY, mcc_codes)
 
@@ -57,13 +57,12 @@ class MCCCategory(db.Model, BaseModelMixin):
         if mcc_categories:
             return mcc_categories
         try:
-            mcc_categories = [mcc.name for mcc in await cls.query.gino.all()]
+            mcc_categories = [category.as_dict() for category in await cls.query.gino.all()]
         except SQLAlchemyError as err:
             LOGGER.error("Could not retrieve all MCC categories. Error: %s", err)
-            raise DatabaseError("Failed to retrieve all MCC categories.")
+            raise DatabaseError("Failed to retrieve MCC categories.")
         else:
             await cache.set(MCC_CATEGORIES_CACHE_KEY, mcc_categories)
-
         return mcc_categories
 
     @classmethod
@@ -73,9 +72,9 @@ class MCCCategory(db.Model, BaseModelMixin):
             category = await cls.query.where(cls.name == name).gino.first()
         except SQLAlchemyError as err:
             LOGGER.error("Could not retrieve MCC category=%s. Error: %s", name, err)
-            raise DatabaseError(f"Failed to retrieve MCC category={name}")
+            raise DatabaseError("Failed to retrieve MCC category `{name}`")
 
         if not category:
-            raise DatabaseError(f"The category={name} does not exist.")
+            raise DatabaseError(f"The category with such name `{name}` does not exist.")
 
         return category
