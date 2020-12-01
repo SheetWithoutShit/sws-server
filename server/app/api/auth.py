@@ -38,15 +38,15 @@ class AuthSignUp(web.View):
         except KeyError:
             return make_response(
                 success=False,
-                message="Wrong input. Required fields email or password is not provided.",
-                http_status=HTTPStatus.BAD_REQUEST
+                message="Required fields email or password is not provided.",
+                http_status=HTTPStatus.UNPROCESSABLE_ENTITY
             )
 
         validation_errors = validate_password(password) + validate_email(email)
         if validation_errors:
             return make_response(
                 success=False,
-                message=f"Wrong input: {' '.join(validation_errors)}",
+                message=' '.join(validation_errors),
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
@@ -65,7 +65,7 @@ class AuthSignUp(web.View):
         response_data = {"id": user.id, "email": user.email}
         return make_response(
             success=True,
-            message="Success. The user was created.",
+            message="The user was created.",
             data=response_data,
             http_status=HTTPStatus.CREATED,
         )
@@ -85,8 +85,8 @@ class AuthSignIn(web.View):
         except KeyError:
             return make_response(
                 success=False,
-                message="Wrong input. Required fields email or password is not provided.",
-                http_status=HTTPStatus.BAD_REQUEST
+                message="Required fields email or password is not provided.",
+                http_status=HTTPStatus.UNPROCESSABLE_ENTITY
             )
 
         try:
@@ -102,7 +102,7 @@ class AuthSignIn(web.View):
         if not is_correct:
             return make_response(
                 success=False,
-                message=f"Wrong input. The provided password for user {email} is not correct.",
+                message=f"The provided password for user {email} is not correct.",
                 http_status=HTTPStatus.UNAUTHORIZED
             )
 
@@ -123,7 +123,7 @@ class AuthSignIn(web.View):
         }
         return make_response(
             success=True,
-            message="Success. The user was authorized.",
+            message="The user was authorized.",
             data=response_data,
             http_status=HTTPStatus.OK,
         )
@@ -143,8 +143,8 @@ class AuthRefreshAccess(web.View):
         except KeyError:
             return make_response(
                 success=False,
-                message="Wrong input. Required field refresh_access_token is not provided.",
-                http_status=HTTPStatus.BAD_REQUEST
+                message="Required field refresh_access_token is not provided.",
+                http_status=HTTPStatus.UNPROCESSABLE_ENTITY
             )
 
         try:
@@ -152,7 +152,7 @@ class AuthRefreshAccess(web.View):
         except TokenError as err:
             return make_response(
                 success=False,
-                message=f"Wrong input. Invalid refresh access token. {str(err)}",
+                message=f"Invalid refresh access token. {str(err)}",
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
@@ -174,7 +174,7 @@ class AuthRefreshAccess(web.View):
         }
         return make_response(
             success=True,
-            message="Success. The access token was refreshed.",
+            message="The access token was refreshed.",
             data=response_data,
             http_status=HTTPStatus.OK,
         )
@@ -192,8 +192,8 @@ class AuthChangePasswordView(web.View):
         except KeyError:
             return make_response(
                 success=False,
-                message="Wrong input. Required fields old_password or new_password is not provided.",
-                http_status=HTTPStatus.BAD_REQUEST
+                message="Required fields old_password or new_password is not provided.",
+                http_status=HTTPStatus.UNPROCESSABLE_ENTITY
             )
 
         try:
@@ -209,7 +209,7 @@ class AuthChangePasswordView(web.View):
         if not is_correct:
             return make_response(
                 success=False,
-                message="Wrong input. The provided old password is not correct.",
+                message="The provided old password is not correct.",
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
@@ -217,7 +217,7 @@ class AuthChangePasswordView(web.View):
         if validation_errors:
             return make_response(
                 success=False,
-                message=f"Wrong input. Invalid new password: {' '.join(validation_errors)}",
+                message=f"Invalid new password: {' '.join(validation_errors)}",
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
@@ -227,13 +227,13 @@ class AuthChangePasswordView(web.View):
         except DatabaseError:
             return make_response(
                 success=False,
-                message="Failure. The user password was not changed.",
+                message="The user password was not changed.",
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
         return make_response(
             success=True,
-            message="Success. The user password was changed.",
+            message="The user password was changed.",
             http_status=HTTPStatus.OK,
         )
 
@@ -249,8 +249,8 @@ class AuthResetPasswordView(web.View):
         except KeyError:
             return make_response(
                 success=False,
-                message="Wrong input. Required param reset_password_code is not provided.",
-                http_status=HTTPStatus.BAD_REQUEST
+                message="Required param reset_password_code is not provided.",
+                http_status=HTTPStatus.UNPROCESSABLE_ENTITY
             )
 
         return render_template(
@@ -268,8 +268,8 @@ class AuthResetPasswordView(web.View):
         except KeyError:
             return make_response(
                 success=False,
-                message="Wrong input. Required field email is not provided.",
-                http_status=HTTPStatus.BAD_REQUEST
+                message="Required field email is not provided.",
+                http_status=HTTPStatus.UNPROCESSABLE_ENTITY
             )
 
         try:
@@ -290,7 +290,7 @@ class AuthResetPasswordView(web.View):
 
         return make_response(
             success=True,
-            message=f"Success. The email with link for password resetting should soon be delivered to {user.email}.",
+            message=f"The email with link for password resetting should soon be delivered to {user.email}.",
             http_status=HTTPStatus.OK,
         )
 
@@ -304,8 +304,8 @@ class AuthResetPasswordView(web.View):
         except KeyError:
             return make_response(
                 success=False,
-                message="Wrong input. Required field new_password or reset_password_code is not provided.",
-                http_status=HTTPStatus.BAD_REQUEST
+                message="Required field new_password or reset_password_code is not provided.",
+                http_status=HTTPStatus.UNPROCESSABLE_ENTITY
             )
 
         reset_password_key = RESET_PASSWORD_CACHE_KEY.format(code=reset_password_code)
@@ -313,7 +313,7 @@ class AuthResetPasswordView(web.View):
         if user_id is None:
             return make_response(
                 success=False,
-                message="Wrong input. Required field reset_password_code is not correct or expired.",
+                message="Required field reset_password_code is not correct or expired.",
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
@@ -321,7 +321,7 @@ class AuthResetPasswordView(web.View):
         if validation_errors:
             return make_response(
                 success=False,
-                message=f"Wrong input. Invalid new password: {' '.join(validation_errors)}",
+                message=f"Invalid new password: {' '.join(validation_errors)}",
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
@@ -331,7 +331,7 @@ class AuthResetPasswordView(web.View):
         except DatabaseError:
             return make_response(
                 success=False,
-                message="Failure. The user password was not changed.",
+                message="The user password was not changed.",
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
@@ -339,7 +339,7 @@ class AuthResetPasswordView(web.View):
 
         return make_response(
             success=True,
-            message="Success. The user password was changed.",
+            message="The user password was changed.",
             http_status=HTTPStatus.OK,
         )
 
@@ -358,15 +358,15 @@ class AuthChangeEmailView(web.View):
         except KeyError:
             return make_response(
                 success=False,
-                message="Wrong input. Required field new_email is not provided.",
-                http_status=HTTPStatus.BAD_REQUEST
+                message="Required field new_email is not provided.",
+                http_status=HTTPStatus.UNPROCESSABLE_ENTITY
             )
 
         validation_errors = validate_email(new_email)
         if validation_errors:
             return make_response(
                 success=False,
-                message=f"Wrong input: {' '.join(validation_errors)}",
+                message=' '.join(validation_errors),
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
@@ -382,7 +382,7 @@ class AuthChangeEmailView(web.View):
         if user.email == new_email:
             return make_response(
                 success=False,
-                message="Wrong input. New email cannot be the same as your old email",
+                message="New email cannot be the same as your old email",
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
@@ -396,7 +396,7 @@ class AuthChangeEmailView(web.View):
 
         return make_response(
             success=True,
-            message=f"Success. The email with link for email changing confirmation "
+            message=f"The email with link for email changing confirmation "
                     f"should soon be delivered to {user.email}.",
             http_status=HTTPStatus.OK,
         )
@@ -414,8 +414,8 @@ class AuthChangeEmailConfirmView(web.View):
         except KeyError:
             return make_response(
                 success=False,
-                message="Wrong input. Required param change_email_code is not provided.",
-                http_status=HTTPStatus.BAD_REQUEST
+                message="Required param change_email_code is not provided.",
+                http_status=HTTPStatus.UNPROCESSABLE_ENTITY
             )
 
         change_email_key = CHANGE_EMAIL_CACHE_KEY.format(code=change_email_code)
@@ -423,7 +423,7 @@ class AuthChangeEmailConfirmView(web.View):
         if not change_email_cache_data:
             return make_response(
                 success=False,
-                message="Wrong input. Required query argument change_email_code is not correct or was expired.",
+                message="Required query argument change_email_code is not correct or was expired.",
                 http_status=HTTPStatus.BAD_REQUEST
             )
 
@@ -433,7 +433,7 @@ class AuthChangeEmailConfirmView(web.View):
         except DatabaseError:
             return make_response(
                 success=False,
-                message="Failure. The user email was not updated.",
+                message="The user email was not updated.",
                 http_status=HTTPStatus.BAD_REQUEST
             )
 

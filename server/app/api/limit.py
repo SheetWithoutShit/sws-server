@@ -78,7 +78,7 @@ class BudgetLimitsView(web.View):
             return make_response(
                 success=False,
                 message="Wrong input. Required fields category or amount is not provided.",
-                http_status=HTTPStatus.BAD_REQUEST
+                http_status=HTTPStatus.UNPROCESSABLE_ENTITY
             )
 
         try:
@@ -130,7 +130,7 @@ class LimitView(web.View):
             return make_response(
                 success=False,
                 message="Wrong input. Required field amount is not provided.",
-                http_status=HTTPStatus.BAD_REQUEST
+                http_status=HTTPStatus.UNPROCESSABLE_ENTITY
             )
 
         validation_errors = validate_limit_amount(amount)

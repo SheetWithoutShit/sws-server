@@ -1,23 +1,21 @@
 """This module provides helper functionality with JWT."""
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import jwt
 
 from app.utils.errors import TokenError
-from app.utils.time import DATETIME_FORMAT
 
 
 def generate_token(secret_key, private_claims=None, exp_days=None):
     """Return encoded json web token."""
     token_exp = None
-    now = datetime.now()
+    now = int(datetime.now().timestamp())
     payload = {"iat": now}
 
     if exp_days is not None:
-        exp = now + timedelta(days=exp_days)
-        payload.update({"exp": exp})
-        token_exp = exp.strftime(DATETIME_FORMAT)
+        token_exp = now + (exp_days * 60 * 60 * 24)
+        payload.update({"exp": token_exp})
 
     if private_claims:
         payload.update(private_claims)

@@ -45,7 +45,7 @@ class Transaction(db.Model, BaseModelMixin):
             raise DatabaseError(f"Failure. The transaction={transaction['id']} already exists.")
         except SQLAlchemyError as err:
             LOGGER.error("Could not create transaction. Error: %s", err)
-            raise DatabaseError("Failure. Failed to create a new transaction in database.")
+            raise DatabaseError("Failed to create a new transaction in database.")
 
     @classmethod
     async def create_bulk(cls, transactions):
@@ -67,7 +67,7 @@ class Transaction(db.Model, BaseModelMixin):
                 .gino.all()
         except SQLAlchemyError as err:
             LOGGER.error("Could not retrieve transactions for user=%s. Error: %s", user_id, err)
-            raise DatabaseError(f"Failure. Failed to retrieve transactions for user={user_id}.")
+            raise DatabaseError(f"Failed to retrieve transactions for user={user_id}.")
 
         return transactions
 
@@ -92,7 +92,7 @@ class Transaction(db.Model, BaseModelMixin):
                 .gino.all()
         except SQLAlchemyError as err:
             LOGGER.error("Could not retrieve month transaction report for user=%s. Error: %s", user_id, err)
-            raise DatabaseError(f"Failure. Failed to retrieve monthly ({month}.{year}) report for user={user_id}")
+            raise DatabaseError(f"Failed to retrieve monthly ({month}.{year}) report for user={user_id}")
 
         return [dict(item) for item in reports]
 

@@ -3,6 +3,9 @@
 * [![Build Status](https://travis-ci.com/SpentlessInc/spentless-server.svg?branch=staging)](https://travis-ci.com/SpentlessInc/spentless-server) **Staging**
 
 # Description
+API documentation: http://spentless.herokuapp.com/v1/api
+
+
 The main API server includes:
 * auth operations
 * get/update budget information

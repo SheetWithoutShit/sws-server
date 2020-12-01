@@ -11,6 +11,7 @@ from app.utils.jwt import decode_token
 
 HTTP_404_HANDLER = "SystemRoute 404: Not Found"
 SAFE_ROUTES = (
+    "/v1/api",
     "/v1/health",
     "/v1/auth/signup",
     "/v1/auth/signin",

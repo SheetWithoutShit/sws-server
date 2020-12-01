@@ -1,0 +1,817 @@
+swagger: "2.0"
+
+info:
+  version: "1.0.0"
+  title: Spentless API
+  description: The main API server for Spentless application
+
+host: spentless.herokuapp.com
+basePath: /v1
+schemes: [http, https]
+
+consumes:
+  - application/json
+produces:
+  - application/json
+
+paths:
+  /health:
+    get:
+      summary: Check server health
+      responses:
+        200:
+          description: The server is up and ready to proccess requests
+          schema:
+            $ref: '#/schemas/SuccessResponse'
+
+
+  /auth/signup:
+    post:
+      summary: Register a new user
+      parameters:
+        - in: body
+          name: Request Body
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+              password:
+                type: string
+      responses:
+        201:
+          description: The user was successfully created
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                default: true
+              message:
+                type: string
+              data:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  email:
+                    type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+      tags:
+        - auth
+  /auth/signin:
+    post:
+      summary: Log in a user
+      parameters:
+        - in: body
+          name: Request Body
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+              password:
+                type: string
+      responses:
+        200:
+          description: The user was successfully authorized into system
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                default: true
+              message:
+                type: string
+              data:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  access_token_exp:
+                    type: integer
+                  refresh_access_token:
+                    type: string
+                  refresh_access_token_exp:
+                    type: integer
+        400:
+          $ref: '#/responses/BadRequest'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+      tags:
+        - auth
+  /auth/refresh_access:
+    post:
+      summary: Refresh access token
+      parameters:
+        - in: body
+          name: Request Body
+          schema:
+            type: object
+            properties:
+              refresh_access_token:
+                type: string
+      responses:
+        200:
+          description: The access token was refreshed
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                default: true
+              message:
+                type: string
+              data:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  access_token_exp:
+                    type: integer
+                  refresh_access_token:
+                    type: string
+                  refresh_access_token_exp:
+                    type: integer
+        400:
+          $ref: '#/responses/BadRequest'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+      tags:
+        - auth
+  /auth/change_password:
+    put:
+      summary: Change user password
+      parameters:
+        - $ref: '#/parameters/Authorization'
+        - in: body
+          name: Request Body
+          schema:
+            type: object
+            properties:
+              old_password:
+                type: string
+              new_password:
+                type: string
+      responses:
+        200:
+          description: The user password was changed
+          schema:
+            $ref: '#/schemas/SuccessResponse'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+      tags:
+        - auth
+  /auth/reset_password:
+    get:
+      summary: Reset user password form
+      parameters:
+        - in: body
+          name: Request Body
+          schema:
+            type: object
+            properties:
+              reset_password_code:
+                type: string
+      responses:
+        200:
+          description: Render reset user password form
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+      tags:
+        - auth
+    put:
+      summary: Set a new user password
+      parameters:
+        - in: body
+          name: Request Body
+          schema:
+            type: object
+            properties:
+              new_password:
+                type: string
+              reset_password_code:
+                type: string
+      responses:
+        200:
+          description: The user password was changed
+          schema:
+            $ref: '#/schemas/SuccessResponse'
+        400:
+          $ref: '#/responses/BadRequest'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+      tags:
+        - auth
+    post:
+      summary: Request user password reset
+      parameters:
+        - in: body
+          name: Request Body
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+      responses:
+        200:
+          description: Password reset proccess was triggered
+          schema:
+            $ref: '#/schemas/SuccessResponse'
+        400:
+          $ref: '#/responses/BadRequest'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+      tags:
+        - auth
+  /auth/change_email:
+    post:
+      summary: Request user email change
+      parameters:
+        - $ref: '#/parameters/Authorization'
+        - in: body
+          name: Request Body
+          schema:
+            type: object
+            properties:
+              new_email:
+                type: string
+      responses:
+        200:
+          description: Change email proccess was triggered
+          schema:
+            $ref: '#/schemas/SuccessResponse'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+      tags:
+        - auth
+  /auth/change_email/confirm:
+    get:
+      summary: Change email confirmation page
+      parameters:
+        - in: body
+          name: Request Body
+          schema:
+            type: object
+            properties:
+              change_email_code:
+                type: string
+      responses:
+        200:
+          description: Render confirmation of changing email page
+        400:
+          $ref: '#/responses/BadRequest'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+      tags:
+        - auth
+
+
+  /budget:
+    get:
+      summary: Get user budget data
+      parameters:
+        - $ref: '#/parameters/Authorization'
+      responses:
+        200:
+          description: Budget data was successfully retrieved
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                default: true
+              message:
+                type: string
+              data:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  income:
+                    type: string
+                  savings:
+                    type: string
+                  user_id:
+                    type: integer
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+      tags:
+        - budget
+    put:
+      summary: Update user budget data
+      parameters:
+        - $ref: '#/parameters/Authorization'
+        - in: body
+          name: Request Body
+          schema:
+            type: object
+            properties:
+              income:
+                type: number
+              savings:
+                type: number
+      responses:
+        200:
+          description: Budget data was successfully updated
+          schema:
+            $ref: '#/schemas/SuccessResponse'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+      tags:
+        - budget
+
+
+  /limits/categories:
+    get:
+      summary: Get all available categories
+      parameters:
+        - $ref: '#/parameters/Authorization'
+      responses:
+        200:
+          description: Categories data were successfully retrieved
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                default: true
+              message:
+                type: string
+              data:
+                type: array
+                items:
+                  type: string
+
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+      tags:
+        - limit
+  /limits:
+    get:
+      summary: Get user`s limits
+      parameters:
+        - $ref: '#/parameters/Authorization'
+      responses:
+        200:
+          description: User`s limits were successfully retrieved
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                default: true
+              message:
+                type: string
+              data:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    balance:
+                      type: string
+                    name:
+                      type: string
+                    info:
+                      type: string
+                    spent:
+                      type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+      tags:
+        - limit
+    post:
+      summary: Create a new limit for user
+      parameters:
+        - $ref: '#/parameters/Authorization'
+        - in: body
+          name: Request Body
+          schema:
+            type: object
+            properties:
+              category:
+                type: string
+              amount:
+                type: number
+      responses:
+        200:
+          description: User`s limit was successfully created
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                default: true
+              message:
+                type: string
+              data:
+                type: object
+                properties:
+                  category_name:
+                    type: string
+                  id:
+                    type: integer
+                  amount:
+                    type: string
+                  user_id:
+                    type: integer
+                  category_id:
+                    type: integer
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+      tags:
+        - limit
+  /limits/{limit_id}:
+    put:
+      summary: Update user`s limit
+      parameters:
+        - $ref: '#/parameters/Authorization'
+        - in: path
+          name: limit_id
+          type: integer
+          required: true
+        - in: body
+          name: Request Body
+          schema:
+            type: object
+            properties:
+              amount:
+                type: number
+      responses:
+        200:
+          description: User`s limit were successfully updated
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                default: true
+              message:
+                type: string
+              data:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  balance:
+                    type: string
+                  name:
+                    type: string
+                  info:
+                    type: string
+                  spent:
+                    type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        403:
+          $ref: '#/responses/Forbidden'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+      tags:
+        - limit
+    delete:
+      summary: Delete user`s limit
+      parameters:
+        - $ref: '#/parameters/Authorization'
+        - in: path
+          name: limit_id
+          type: integer
+          required: true
+      responses:
+        200:
+          description: User`s limit were successfully deleted
+          schema:
+            $ref: '#/schemas/SuccessResponse'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        403:
+          $ref: '#/responses/Forbidden'
+      tags:
+        - limit
+
+  /user:
+    get:
+      summary: Get user data
+      parameters:
+        - $ref: '#/parameters/Authorization'
+      responses:
+        200:
+          description: User data was successfully retrieved
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                default: true
+              message:
+                type: string
+              data:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  email:
+                    type: string
+                  first_name:
+                    type: string
+                  last_name:
+                    type: string
+                  telegram_id:
+                    type: integer
+                  notifications_enabled:
+                    type: boolean
+                  monobank_enabled:
+                    type: boolean
+                  created:
+                    type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+      tags:
+        - user
+    delete:
+      summary: Delete user account
+      parameters:
+        - $ref: '#/parameters/Authorization'
+      responses:
+        200:
+          description: User was successfully deleted
+          schema:
+            $ref: '#/schemas/SuccessResponse'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+      tags:
+        - user
+  /user/telegram:
+    get:
+      summary: Get user telegram invitation
+      parameters:
+        - $ref: '#/parameters/Authorization'
+      responses:
+        200:
+          description: Telegram invitation was successfully created
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                default: true
+              message:
+                type: string
+              data:
+                type: object
+                properties:
+                  invitation_link:
+                    type: string
+        401:
+          $ref: '#/responses/Unauthorized'
+      tags:
+        - user
+  /user/monobank:
+    put:
+      summary: Update user monobank token
+      parameters:
+        - $ref: '#/parameters/Authorization'
+        - in: body
+          name: Request Body
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+      responses:
+        200:
+          description: User monobank token was successfully updated
+          schema:
+            $ref: '#/schemas/SuccessResponse'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+      tags:
+        - user
+
+
+  /transactions:
+    get:
+      summary: Get user`s transactions
+      parameters:
+        - $ref: '#/parameters/Authorization'
+        - in: query
+          name: start_date
+          type: string
+        - in: query
+          name: end_date
+          type: string
+
+      responses:
+        200:
+          description: User`s transactions were successfully retrieved
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                default: true
+              message:
+                type: string
+              data:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    user_id:
+                      type: integer
+                    amount:
+                      type: string
+                    balance:
+                      type: string
+                    cashback:
+                      type: string
+                    mcc:
+                      type: string
+                    timestamp:
+                      type: string
+                    info:
+                      type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+      tags:
+        - transaction
+  /transactions/report/month:
+    get:
+      summary: Get user`s month transactions report
+      parameters:
+        - $ref: '#/parameters/Authorization'
+        - in: query
+          name: year
+          type: integer
+        - in: query
+          name: month
+          type: integer
+      responses:
+        200:
+          description: User`s month transactions report was successfully retrieved
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                default: true
+              message:
+                type: string
+              data:
+                type: object
+                properties:
+                  year:
+                    type: integer
+                  month:
+                    type: integer
+                  categories:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      info:
+                        type: string
+                      amount:
+                        type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+      tags:
+        - transaction
+  /transactions/report/daily:
+    get:
+      summary: Get user`s month transactions report
+      parameters:
+        - $ref: '#/parameters/Authorization'
+        - in: query
+          name: start_date
+          type: string
+        - in: query
+          name: end_date
+          type: string
+      responses:
+        200:
+          description: User`s daily transactions reports were successfully retrieved
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                default: true
+              message:
+                type: string
+              data:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    date:
+                      type: string
+                    amount:
+                      type: string
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+      tags:
+        - transaction
+
+
+schemas:
+  ErrorResponse:
+    type: object
+    properties:
+      success:
+        type: boolean
+        default: false
+      message:
+        type: string
+      data:
+        type: object
+  SuccessResponse:
+    type: object
+    properties:
+      success:
+        type: boolean
+        default: true
+      message:
+        type: string
+      data:
+        type: object
+
+
+parameters:
+  Authorization:
+    in: header
+    name: Authorization
+    required: true
+    type: string
+    description: Authorization access token
+    pattern: '^Bearer .*'
+
+
+responses:
+  BadRequest:
+    description: Bad request was received
+    schema:
+      $ref: '#/schemas/ErrorResponse'
+  Unauthorized:
+    description: The access token was missed or incorrect
+    schema:
+      $ref: '#/schemas/ErrorResponse'
+  Forbidden:
+    description: Wrong permissions for current user
+    schema:
+      $ref: '#/schemas/ErrorResponse'
+  UnprocessableEntity:
+    description: Required fields were not provided
+    schema:
+      $ref: '#/schemas/ErrorResponse'
