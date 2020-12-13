@@ -117,3 +117,45 @@ class UserMonobankView(web.View):
             message="The monobank token was successfully applied.",
             http_status=HTTPStatus.OK,
         )
+
+
+@user_routes.view("/v1/user/notifications")
+class UserNotificationsView(web.View):
+    """Class that includes functionality to work with user notifications."""
+
+    async def put(self):
+        """Disabled/enable user`s notifications."""
+        body = self.request.body
+        user_id = self.request.user_id
+
+        try:
+            notifications_enabled = body["enabled"]
+        except KeyError:
+            return make_response(
+                success=False,
+                message="Required field enabled is not provided.",
+                http_status=HTTPStatus.BAD_REQUEST
+            )
+
+        if not isinstance(notifications_enabled, bool):
+            return make_response(
+                success=False,
+                message="The provided field enabled is not correct. Expected bool type.",
+                http_status=HTTPStatus.UNPROCESSABLE_ENTITY
+            )
+
+        try:
+            await User.update(user_id, notifications_enabled=notifications_enabled)
+        except DatabaseError as err:
+            return make_response(
+                success=False,
+                message=str(err),
+                http_status=HTTPStatus.BAD_REQUEST
+            )
+
+        result = "enabled" if notifications_enabled else "disabled"
+        return make_response(
+            success=True,
+            message=f"The notifications were successfully {result}.",
+            http_status=HTTPStatus.OK,
+        )
