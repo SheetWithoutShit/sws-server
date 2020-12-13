@@ -624,6 +624,31 @@ paths:
           $ref: '#/responses/UnprocessableEntity'
       tags:
         - user
+  /user/notifications:
+    put:
+      summary: Enable/disable user notifications
+      parameters:
+        - $ref: '#/parameters/Authorization'
+        - in: body
+          name: Request Body
+          schema:
+            type: object
+            properties:
+              enable:
+                type: boolean
+      responses:
+        200:
+          description: User notifications were successfully enabled/disabled
+          schema:
+            $ref: '#/definitions/SuccessResponse'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        422:
+          $ref: '#/responses/UnprocessableEntity'
+      tags:
+        - user
 
 
   /transactions:
