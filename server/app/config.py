@@ -11,6 +11,7 @@ ROOT_DIR = os.path.abspath(os.path.join(APP_DIR, os.pardir))
 TEMPLATES_DIR = os.path.join(APP_DIR, "templates")
 EMAILS_DIR = os.path.join(TEMPLATES_DIR, "emails")
 SERVER_MODE = os.getenv("SERVER_MODE", "DEV")
+SERVER_HOST = os.getenv("SERVER_HOST", "localhost")
 COLLECTOR_HOST = os.getenv("COLLECTOR_HOST")
 COLLECTOR_WEBHOOK_SECRET = os.getenv("MONOBANK_WEBHOOK_SECRET")
 
@@ -49,5 +50,8 @@ POSTGRES_DSN_DEV = URL(
 REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379")
 
 # Telegram stuff
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_BOT_NAME = "SpentlessBot"
+TELEGRAM_BOT_WEBHOOK_PATH = "/v1/telegram_webhook"
+TELEGRAM_BOT_WEBHOOK_URL = f"https://{SERVER_HOST}{TELEGRAM_BOT_WEBHOOK_PATH}"
 TELEGRAM_BOT_INVITATION_LINK = "https://t.me/SpentlessBot?start={code}"

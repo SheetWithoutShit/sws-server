@@ -6,7 +6,7 @@ from http import HTTPStatus
 from aiohttp import web
 from aiojobs.aiohttp import spawn
 
-from app.cache import cache, TELEGRAM_CACHE_KEY
+from app.cache import cache, TELEGRAM_CACHE_KEY, TELEGRAM_CACHE_EXPIRE
 from app.models.user import User
 from app.utils.response import make_response
 from app.utils.errors import DatabaseError
@@ -65,7 +65,7 @@ class UserTelegramView(web.View):
 
         telegram_cache_code = str(uuid.uuid4())
         telegram_cache_key = TELEGRAM_CACHE_KEY.format(code=telegram_cache_code)
-        await cache.set(telegram_cache_key, self.request.user_id, config.TELEGRAM_EXPIRE)
+        await cache.set(telegram_cache_key, self.request.user_id, TELEGRAM_CACHE_EXPIRE)
 
         telegram_invitation_link = config.TELEGRAM_BOT_INVITATION_LINK.format(code=telegram_cache_code)
         response_data = {"invitation_link": telegram_invitation_link}
