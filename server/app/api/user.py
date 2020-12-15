@@ -2,6 +2,7 @@
 
 import uuid
 from http import HTTPStatus
+from datetime import datetime
 
 from aiohttp import web
 from aiojobs.aiohttp import spawn
@@ -61,6 +62,7 @@ class UserTelegramView(web.View):
 
     async def get(self):
         """Return invitation link for user to telegram bot."""
+        now = int(datetime.now().timestamp())
         config = self.request.app.config
 
         telegram_cache_code = str(uuid.uuid4())
@@ -68,7 +70,11 @@ class UserTelegramView(web.View):
         await cache.set(telegram_cache_key, self.request.user_id, TELEGRAM_CACHE_EXPIRE)
 
         telegram_invitation_link = config.TELEGRAM_BOT_INVITATION_LINK.format(code=telegram_cache_code)
-        response_data = {"invitation_link": telegram_invitation_link}
+        invitation_expired_at = now + TELEGRAM_CACHE_EXPIRE
+        response_data = {
+            "link": telegram_invitation_link,
+            "exp": invitation_expired_at
+        }
         return make_response(
             success=True,
             message="The invitation link to telegram bot was created.",

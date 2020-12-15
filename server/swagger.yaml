@@ -593,8 +593,10 @@ paths:
               data:
                 type: object
                 properties:
-                  invitation_link:
+                  link:
                     type: string
+                  exp:
+                    type: integer
         401:
           $ref: '#/responses/Unauthorized'
       tags:
