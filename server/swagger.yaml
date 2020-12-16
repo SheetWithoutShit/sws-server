@@ -626,6 +626,21 @@ paths:
           $ref: '#/responses/UnprocessableEntity'
       tags:
         - user
+    delete:
+      summary: Delete user monobank token
+      parameters:
+        - $ref: '#/parameters/Authorization'
+      responses:
+        200:
+          description: User monobank token was successfully deactivated
+          schema:
+            $ref: '#/definitions/SuccessResponse'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+      tags:
+        - user
   /user/notifications:
     put:
       summary: Enable/disable user notifications

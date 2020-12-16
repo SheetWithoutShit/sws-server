@@ -124,6 +124,25 @@ class UserMonobankView(web.View):
             http_status=HTTPStatus.OK,
         )
 
+    async def delete(self):
+        """Delete monobank api token in the user entity."""
+        user_id = self.request.user_id
+
+        try:
+            await User.update(user_id, monobank_token=None)
+        except DatabaseError as err:
+            return make_response(
+                success=False,
+                message=str(err),
+                http_status=HTTPStatus.BAD_REQUEST
+            )
+
+        return make_response(
+            success=True,
+            message="The monobank token was successfully deactivated.",
+            http_status=HTTPStatus.OK,
+        )
+
 
 @user_routes.view("/v1/user/notifications")
 class UserNotificationsView(web.View):
