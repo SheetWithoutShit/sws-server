@@ -10,7 +10,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.db import db
 from app.models import BaseModelMixin, parse_status
-from app.utils.errors import DatabaseError
+from app.utils.errors import DatabaseError, DBNoResultFoundError
 
 
 LOGGER = logging.getLogger(__name__)
@@ -67,7 +67,7 @@ class User(db.Model, BaseModelMixin):
             raise DatabaseError("Failed to retrieve requested user.")
 
         if not user:
-            raise DatabaseError("The user does not exist.")
+            raise DBNoResultFoundError("The user does not exist.")
 
         return user
 
@@ -81,7 +81,21 @@ class User(db.Model, BaseModelMixin):
             raise DatabaseError(f"Failed to retrieve user={email}")
 
         if not user:
-            raise DatabaseError("The user does not exist.")
+            raise DBNoResultFoundError("The user does not exist.")
+
+        return user
+
+    @classmethod
+    async def get_by_telegram_id(cls, telegram_id):
+        """Return queried user by provided telegram id."""
+        try:
+            user = await cls.query.where(User.telegram_id == telegram_id).gino.first()
+        except SQLAlchemyError as err:
+            LOGGER.error("Could not retrieve user telegram_id=%s. Error: %s", telegram_id, err)
+            raise DatabaseError(f"Failed to retrieve user telegram_id={telegram_id}")
+
+        if not user:
+            raise DBNoResultFoundError("The user does not exist.")
 
         return user
 

@@ -8,7 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.db import db
 from app.cache import cache, MCC_CODES_CACHE_KEY, MCC_CATEGORIES_CACHE_KEY
 from app.models import BaseModelMixin
-from app.utils.errors import DatabaseError
+from app.utils.errors import DatabaseError, DBNoResultFoundError
 
 
 LOGGER = logging.getLogger(__name__)
@@ -75,6 +75,6 @@ class MCCCategory(db.Model, BaseModelMixin):
             raise DatabaseError("Failed to retrieve MCC category `{name}`")
 
         if not category:
-            raise DatabaseError(f"The category with such name `{name}` does not exist.")
+            raise DBNoResultFoundError(f"The category with such name `{name}` does not exist.")
 
         return category

@@ -2,13 +2,15 @@
 
 from app.cache import cache, TELEGRAM_CACHE_KEY
 from app.models.user import User
-from app.utils.errors import DatabaseError
+from app.utils.errors import DatabaseError, DBNoResultFoundError
 from app.telegram import (
     TELEGRAM_BOT,
     INCORRECT_INVITATION_LINK_TEXT,
     EXPIRED_INVITATION_LINK_TEXT,
     TRY_LATER_TEXT,
-    TELEGRAM_BOT_ACTIVATED_TEXT
+    ACTIVATED_TEXT,
+    DEACTIVATED_TEXT,
+    ALREADY_DEACTIVATED_TEXT
 )
 
 
@@ -35,6 +37,31 @@ async def handle_start(message):
         await TELEGRAM_BOT.send_message(telegram_id, TRY_LATER_TEXT)
         return
     else:
-        await TELEGRAM_BOT.send_message(telegram_id, TELEGRAM_BOT_ACTIVATED_TEXT)
+        await TELEGRAM_BOT.send_message(telegram_id, ACTIVATED_TEXT)
 
     await cache.delete(telegram_cache_key)
+
+
+async def handle_stop(message):
+    """
+    Handle stop telegram bot command.
+    Deletes user`s telegram id.
+    """
+    telegram_id = message.chat.id
+
+    try:
+        user = await User.get_by_telegram_id(telegram_id)
+    except DBNoResultFoundError:
+        await TELEGRAM_BOT.send_message(telegram_id, ALREADY_DEACTIVATED_TEXT)
+        return
+    except DatabaseError:
+        await TELEGRAM_BOT.send_message(telegram_id, TRY_LATER_TEXT)
+        return
+
+    try:
+        await User.update(user.id, telegram_id=telegram_id)
+    except DatabaseError:
+        await TELEGRAM_BOT.send_message(telegram_id, TRY_LATER_TEXT)
+        return
+    else:
+        await TELEGRAM_BOT.send_message(telegram_id, DEACTIVATED_TEXT)

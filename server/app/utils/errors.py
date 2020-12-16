@@ -18,13 +18,17 @@ class BaseError(Exception):
         return self.message
 
 
-class DatabaseError(BaseError):
-    """Class that represents errors caused on interaction with database."""
-
-
 class TokenError(BaseError):
     """Class that represents errors caused on interaction with auth token."""
 
 
 class RetryError(BaseError):
     """Class that represents errors caused for retry."""
+
+
+class DatabaseError(BaseError):
+    """Class that represents errors caused on interaction with database."""
+
+
+class DBNoResultFoundError(DatabaseError):
+    """Class that represents errors caused on not existing entity."""

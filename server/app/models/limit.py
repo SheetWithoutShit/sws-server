@@ -10,7 +10,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.db import db
 from app.models import BaseModelMixin, parse_status
 from app.models.mcc import MCCCategory
-from app.utils.errors import DatabaseError
+from app.utils.errors import DatabaseError, DBNoResultFoundError
 
 LOGGER = logging.getLogger(__name__)
 
@@ -41,7 +41,7 @@ class Limit(db.Model, BaseModelMixin):
             raise DatabaseError("Failed to retrieve requested budget limit.")
 
         if not limit:
-            raise DatabaseError("The requested budget limit does not exist.")
+            raise DBNoResultFoundError("The requested budget limit does not exist.")
 
         return limit
 
