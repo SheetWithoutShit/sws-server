@@ -34,8 +34,9 @@ class TransactionsView(web.View):
                 http_status=HTTPStatus.UNPROCESSABLE_ENTITY
             )
 
+        category = self.request.query.get("category")
         try:
-            result = await Transaction.get_transactions(self.request.user_id, start_date, end_date)
+            result = await Transaction.get_transactions(self.request.user_id, category, start_date, end_date)
         except DatabaseError as err:
             return make_response(
                 success=False,

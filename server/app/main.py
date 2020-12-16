@@ -126,7 +126,9 @@ def init_app():
     TELEGRAM_DISPATCHER.register_message_handler(handle_stop, commands=["stop"])
 
     app.on_startup.append(init_config)
-    app.cleanup_ctx.append(init_telegram_webhook)
+
+    if config.SERVER_MODE != "DEV":
+        app.cleanup_ctx.append(init_telegram_webhook)
 
     app.middlewares.append(db)
     app.middlewares.append(error_middleware({

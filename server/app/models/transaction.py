@@ -4,7 +4,7 @@ import logging
 from datetime import datetime
 
 from asyncpg import exceptions
-from sqlalchemy import between, extract, func, cast
+from sqlalchemy import between, extract, func, cast, and_
 from sqlalchemy.orm import relationship
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -57,8 +57,15 @@ class Transaction(db.Model, BaseModelMixin):
                 continue
 
     @classmethod
-    async def get_transactions(cls, user_id, start_date, end_date):
+    async def get_transactions(cls, user_id, category, start_date, end_date):
         """Retrieve transactions for provided period by user_id."""
+        filters = [
+            cls.user_id == user_id,
+            between(cls.timestamp, start_date, end_date)
+        ]
+        if category:
+            filters.append(MCCCategory.name == category)
+
         try:
             transactions = await db \
                 .select([
@@ -73,10 +80,7 @@ class Transaction(db.Model, BaseModelMixin):
                     MCCCategory.name.label("category_name")
                 ]) \
                 .select_from(cls.join(MCC.join(MCCCategory))) \
-                .where(
-                    (cls.user_id == user_id) &
-                    between(cls.timestamp, start_date, end_date)
-                ) \
+                .where(and_(*filters)) \
                 .gino.all()
         except SQLAlchemyError as err:
             LOGGER.error("Could not retrieve transactions for user=%s. Error: %s", user_id, err)

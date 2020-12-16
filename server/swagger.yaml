@@ -679,6 +679,9 @@ paths:
         - in: query
           name: end_date
           type: string
+        - in: query
+          name: category
+          type: string
 
       responses:
         200:
