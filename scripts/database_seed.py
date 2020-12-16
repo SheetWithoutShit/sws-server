@@ -35,8 +35,8 @@ insert_mcc_categories = """
         (13, 'Household Appliances', 'Goods of household appliance in specialized shops.'),
         (14, 'Gas Stations', 'Diesel fuel, gasoline, gas fuel at a gas station.'),
         (15, 'Fast Food', 'Shopping in fast food restaurants such as McDonald`s, KFC, etc.'),
-        (16, 'Card transfers', 'Money transfers between accounts.'),
-        (17, 'Communal services', 'Electric, gas, sanitary and water utilities')
+        (16, 'Card Transfers', 'Money transfers between accounts.'),
+        (17, 'Communal Services', 'Electric, gas, sanitary and water utilities')
     
     ON CONFLICT (id) DO NOTHING
     RETURNING id, name, info;

@@ -21,7 +21,7 @@ from app.api.auth import auth_routes
 from app.api.user import user_routes
 from app.api.limit import limit_routes
 from app.api.transaction import transaction_routes
-from app.api.telegram import handle_start
+from app.api.telegram import handle_start, handle_stop
 from app.api.index import handle_404, handle_405, handle_500
 
 
@@ -123,6 +123,7 @@ def init_app():
     app.add_routes(limit_routes)
 
     TELEGRAM_DISPATCHER.register_message_handler(handle_start, commands=["start"])
+    TELEGRAM_DISPATCHER.register_message_handler(handle_stop, commands=["stop"])
 
     app.on_startup.append(init_config)
     app.cleanup_ctx.append(init_telegram_webhook)

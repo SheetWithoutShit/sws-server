@@ -41,7 +41,7 @@ class Transaction(db.Model, BaseModelMixin):
         try:
             return await super().create(**transaction)
         except exceptions.UniqueViolationError:
-            LOGGER.error("A transaction with that id already exists. Transaction: %s", transaction)
+            LOGGER.debug("A transaction with that id already exists. Transaction: %s", transaction)
             raise DatabaseError("A transaction with such id already exists.")
         except SQLAlchemyError as err:
             LOGGER.error("Could not create transaction. Error: %s", err)

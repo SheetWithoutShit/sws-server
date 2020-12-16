@@ -129,7 +129,7 @@ class UserMonobankView(web.View):
         user_id = self.request.user_id
 
         try:
-            await User.update(user_id, monobank_token=None)
+            await User.update(user_id, monobank_token="")
         except DatabaseError as err:
             return make_response(
                 success=False,
