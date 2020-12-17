@@ -81,6 +81,7 @@ class Transaction(db.Model, BaseModelMixin):
                 ]) \
                 .select_from(cls.join(MCC.join(MCCCategory))) \
                 .where(and_(*filters)) \
+                .order_by(cls.timestamp.desc()) \
                 .gino.all()
         except SQLAlchemyError as err:
             LOGGER.error("Could not retrieve transactions for user=%s. Error: %s", user_id, err)
